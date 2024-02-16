@@ -31,7 +31,8 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: CaptureAndStampImage());
+    return MaterialApp(
+        debugShowCheckedModeBanner: false, home: CaptureAndStampImage());
     // yeh vala
     // home: CameraApp()
     // home: CameraScreen(),
