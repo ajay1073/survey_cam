@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1016385821921",
+    "project_id": "surveycam-1d727",
+    "storage_bucket": "surveycam-1d727.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016385821921:android:0c728a0b6b5985121d6ba0",
+        "android_client_info": {
+          "package_name": "com.example.survey_cam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBK0lUuPV2Bz2pJV5an0rjCnGkbeRGAnyQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
