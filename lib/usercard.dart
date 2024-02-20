@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:survey_cam/useradd.dart';
-import 'package:survey_cam/usermodel.dart';
+import 'package:mycam/useradd.dart';
+import 'package:mycam/usermodel.dart';
 
 class UserCard extends StatelessWidget {
   final UserModel model;
@@ -10,42 +10,85 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
     return Card(
         elevation: 2,
-        margin: const EdgeInsets.all(10),
+        margin: EdgeInsets.symmetric(
+            horizontal: screenSize.width * 0.028,
+            vertical: screenSize.height * 0.0125),
         child: Container(
             decoration: BoxDecoration(
                 color: model.isActive == true
                     ? Colors.green[200]
                     : Colors.red[200]),
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.symmetric(
+                vertical: screenSize.height * 0.01,
+                horizontal: screenSize.width * 0.02),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        child: Text(
-                          model.userName,
-                          style: GoogleFonts.montserrat(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: screenSize.width * 0.028,
+                          right: screenSize.width * 0.028,
+                          top: screenSize.height * 0.00625,
+                          bottom: screenSize.height * 0.00625),
+                      child: Text(
+                        "Name: ${model.userName}",
+                        style: TextStyle(
+                            fontFamily: "Montserrat",
+                            fontSize: screenSize.height * 0.025,
+                            fontWeight: FontWeight.w500),
                       ),
-                      Container(
-                        child: Text(
-                          model.userPhone.toString(),
-                          style: GoogleFonts.montserrat(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
+                    ),
+                    Divider(
+                      color:
+                          model.isActive == true ? Colors.yellow : Colors.white,
+                      endIndent: 10,
+                      indent: 10,
+                      thickness: 1,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: screenSize.width * 0.028,
+                        right: screenSize.width * 0.028,
                       ),
-                    ],
-                  ),
+                      child: Text(
+                        "Phone: ${model.userPhone}",
+                        style: TextStyle(
+                            fontFamily: "Montserrat",
+                            fontSize: screenSize.height * 0.025,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    Divider(
+                      color:
+                          model.isActive == true ? Colors.yellow : Colors.white,
+                      endIndent: 10,
+                      indent: 10,
+                      thickness: 1,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: screenSize.width * 0.028,
+                        right: screenSize.width * 0.028,
+                      ),
+                      child: Text(
+                        "ID: ${model.userID}",
+                        style: TextStyle(
+                            fontFamily: "Montserrat",
+                            fontSize: screenSize.height * 0.025,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
                 ),
-                const Divider(
-                  color: Colors.grey,
+                Divider(
+                  color: model.isActive == true ? Colors.yellow : Colors.white,
                   endIndent: 10,
                   indent: 10,
                   thickness: 1,
@@ -53,42 +96,58 @@ class UserCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5)),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6, horizontal: 7),
-                        child: model.isAdmin == true
-                            ? Text(
-                                "Admin : Yes",
-                                style: GoogleFonts.actor(fontSize: 16),
-                              )
-                            : Text(
-                                "Admin : No",
-                                style: GoogleFonts.actor(fontSize: 16),
-                              )),
-                    ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => UserAddPage(model)));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          elevation: 5,
-                        ),
-                        child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Text(
-                              "Edit User",
-                              style: GoogleFonts.montserrat(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            )))
+                    Padding(
+                      padding: EdgeInsets.only(left: screenSize.width * 0.028),
+                      child: Container(
+                          margin: EdgeInsets.symmetric(
+                              horizontal: screenSize.width * 0.0138),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(5)),
+                          padding: EdgeInsets.symmetric(
+                              vertical: screenSize.height * 0.0075,
+                              horizontal: screenSize.width * 0.0194),
+                          child: model.isAdmin == true
+                              ? Text(
+                                  "Admin : Yes",
+                                  style: TextStyle(
+                                      fontFamily: "Montserrat",
+                                      fontSize: screenSize.height * 0.02,
+                                      fontWeight: FontWeight.w500),
+                                )
+                              : Text(
+                                  "Admin : No",
+                                  style: TextStyle(
+                                      fontFamily: "Montserrat",
+                                      fontSize: screenSize.height * 0.02,
+                                      fontWeight: FontWeight.w500),
+                                )),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(right: screenSize.width * 0.035),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserAddPage(model)));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            elevation: 5,
+                          ),
+                          child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: screenSize.height * 0.00625,
+                                  horizontal: screenSize.width * 0.0138),
+                              child: Text(
+                                "Edit User",
+                                style: TextStyle(
+                                    fontFamily: "Montserrat",
+                                    fontSize: screenSize.height * 0.025,
+                                    fontWeight: FontWeight.w500),
+                              ))),
+                    )
                   ],
                 ),
               ],

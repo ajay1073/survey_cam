@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:survey_cam/usermodel.dart';
+import 'package:mycam/usermodel.dart';
 import 'package:uuid/uuid.dart';
 
 class UserAddPage extends StatefulWidget {
@@ -59,27 +59,52 @@ class _UserAddPageState extends State<UserAddPage> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Hello"),
+        title: widget.model != null
+            ? Text(
+                "Edit User",
+                style: TextStyle(
+                    fontFamily: "Montserrat",
+                    fontSize: screenSize.height * 0.03125,
+                    fontWeight: FontWeight.w500),
+              )
+            : Text(
+                "Add User",
+                style: TextStyle(
+                    fontFamily: "Montserrat",
+                    fontSize: screenSize.height * 0.03125,
+                    fontWeight: FontWeight.w500),
+              ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.symmetric(
+              vertical: screenSize.height * 0.02,
+              horizontal: screenSize.width * 0.028),
           child: SingleChildScrollView(
             child: Form(
               key: _formkey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Add User"),
-                  const SizedBox(
-                    height: 10,
+                  SizedBox(
+                    height: screenSize.height * 0.0125,
                   ),
                   TextFormField(
+                    style: TextStyle(
+                        fontFamily: "Montserrat",
+                        fontSize: screenSize.height * 0.0225,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500),
                     controller: userNameController,
                     decoration: InputDecoration(
-                      labelStyle: const TextStyle(color: Colors.black),
+                      labelStyle: TextStyle(
+                          color: Colors.black,
+                          fontFamily: "Montserrat",
+                          fontSize: screenSize.height * 0.025,
+                          fontWeight: FontWeight.w500),
                       alignLabelWithHint: true,
                       labelText: "User Name",
                       border: OutlineInputBorder(
@@ -117,8 +142,8 @@ class _UserAddPageState extends State<UserAddPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(
-                    height: 10,
+                  SizedBox(
+                    height: screenSize.height * 0.035,
                   ),
                   TextFormField(
                     onChanged: (value) {
@@ -126,6 +151,11 @@ class _UserAddPageState extends State<UserAddPage> {
                         userMobileController.text = value;
                       });
                     },
+                    style: TextStyle(
+                        fontFamily: "Montserrat",
+                        fontSize: screenSize.height * 0.0225,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500),
                     keyboardType: TextInputType.phone,
                     controller: userMobileController,
                     decoration: InputDecoration(
@@ -139,7 +169,7 @@ class _UserAddPageState extends State<UserAddPage> {
                               color: Colors.black,
                             ),
                       prefixIcon: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(11.5),
                         child: InkWell(
                           onTap: () {
                             showCountryPicker(
@@ -155,40 +185,35 @@ class _UserAddPageState extends State<UserAddPage> {
                           },
                           child: Text(
                             "${selectedCountry.flagEmoji} + ${selectedCountry.phoneCode}",
-                            style: GoogleFonts.montserrat(
-                              fontSize: 18,
-                              color: Colors.black,
-                            ),
+                            style: TextStyle(
+                                fontFamily: "Montserrat",
+                                fontSize: screenSize.height * 0.0225,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w500),
                           ),
                         ),
                       ),
-                      labelStyle: const TextStyle(color: Colors.black),
+                      labelStyle: TextStyle(
+                          color: Colors.black,
+                          fontFamily: "Montserrat",
+                          fontSize: screenSize.height * 0.025,
+                          fontWeight: FontWeight.w500),
                       alignLabelWithHint: true,
                       labelText: "User Phone",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: userMobileController.text.length > 9
-                            ? const BorderSide(
-                                width: 2,
-                                color: Colors.green,
-                              )
-                            : const BorderSide(
-                                width: 2,
-                                color: Colors.blue,
-                              ),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(
+                          width: 2,
+                          color: Colors.blue,
+                        ),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: userMobileController.text.length > 9
-                            ? const BorderSide(
-                                width: 2,
-                                color: Colors.green,
-                              )
-                            : const BorderSide(
-                                width: 2,
-                                color: Colors.blue,
-                              ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(
+                          width: 2,
+                          color: Colors.blue,
+                        ),
                       ),
                       errorBorder: const OutlineInputBorder(
                         borderSide: BorderSide(
@@ -210,59 +235,68 @@ class _UserAddPageState extends State<UserAddPage> {
                       return null;
                     },
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                    child: Container(
-                      padding: const EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 10),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(color: Colors.purple, width: 2)),
-                      child: Row(
-                        // mainAxisAlignment: MainAxisAlignment.start,
-                        // crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                              // flex: 1,
-                              child: Text(
-                            "Admin:",
-                            style: GoogleFonts.montserrat(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          )),
-                          adminTypeWidget()
-                        ],
-                      ),
+                  SizedBox(
+                    height: screenSize.height * 0.035,
+                  ),
+                  Container(
+                    height: screenSize.height * 0.075,
+                    padding: EdgeInsets.only(
+                        left: screenSize.width * 0.028,
+                        right: screenSize.width * 0.028,
+                        top: screenSize.height * 0.0125,
+                        bottom: screenSize.height * 0.0125),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: Colors.blue, width: 2)),
+                    child: Row(
+                      // mainAxisAlignment: MainAxisAlignment.start,
+                      // crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                            // flex: 1,
+                            child: Text(
+                          "Admin:",
+                          style: TextStyle(
+                              fontFamily: "Montserrat",
+                              fontSize: screenSize.height * 0.025,
+                              fontWeight: FontWeight.w500),
+                        )),
+                        adminTypeWidget()
+                      ],
                     ),
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                    child: Container(
-                      padding: const EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 10),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(color: Colors.purple, width: 2)),
-                      child: Row(
-                        // mainAxisAlignment: MainAxisAlignment.start,
-                        // crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                              // flex: 1,
-                              child: Text(
-                            "Active:",
-                            style: GoogleFonts.montserrat(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          )),
-                          activeTypeWidget()
-                        ],
-                      ),
+                  SizedBox(
+                    height: screenSize.height * 0.035,
+                  ),
+                  Container(
+                    height: screenSize.height * 0.075,
+                    padding: EdgeInsets.only(
+                        left: screenSize.width * 0.028,
+                        right: screenSize.width * 0.028,
+                        top: screenSize.height * 0.0125,
+                        bottom: screenSize.height * 0.0125),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: Colors.blue, width: 2)),
+                    child: Row(
+                      // mainAxisAlignment: MainAxisAlignment.start,
+                      // crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                            // flex: 1,
+                            child: Text(
+                          "Active:",
+                          style: TextStyle(
+                              fontFamily: "Montserrat",
+                              fontSize: screenSize.height * 0.025,
+                              fontWeight: FontWeight.w500),
+                        )),
+                        activeTypeWidget()
+                      ],
                     ),
+                  ),
+                  SizedBox(
+                    height: screenSize.height * 0.035,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -316,55 +350,57 @@ class _UserAddPageState extends State<UserAddPage> {
                           elevation: 5,
                         ),
                         child: Padding(
-                            padding: const EdgeInsets.all(8),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: screenSize.width * 0.0277,
+                                vertical: screenSize.height * 0.0125),
                             child: widget.model == null
                                 ? Text(
                                     "Add User",
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: screenSize.height * 0.025,
+                                        fontWeight: FontWeight.w500),
                                   )
                                 : Text(
                                     "Edit User",
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: screenSize.height * 0.025,
+                                        fontWeight: FontWeight.w500),
                                   )),
                       ),
-                      widget.model != null
-                          ? const SizedBox(
-                              width: 15,
-                            )
-                          : Container(),
-                      widget.model != null
-                          ? ElevatedButton(
-                              onPressed: () {
-                                FirebaseFirestore.instance
-                                    .collection("users")
-                                    .doc(widget.model!.userID)
-                                    .delete()
-                                    .then(
-                                      (value) => ScaffoldMessenger.of(context)
-                                          .showSnackBar(const SnackBar(
-                                              content: Text("User Deleted"))),
-                                      // Navigator.pop(context)
-                                    );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                elevation: 5,
-                              ),
-                              child: Text(
-                                "Delete",
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            )
-                          : Container(),
+                      // widget.model != null
+                      //     ? SizedBox(
+                      //         width: screenSize.width * 0.04166,
+                      //       )
+                      //     : Container(),
+                      // widget.model != null
+                      //     ? ElevatedButton(
+                      //         onPressed: () {
+                      //           FirebaseFirestore.instance
+                      //               .collection("users")
+                      //               .doc(widget.model!.userID)
+                      //               .delete()
+                      //               .then(
+                      //                 (value) => ScaffoldMessenger.of(context)
+                      //                     .showSnackBar(const SnackBar(
+                      //                         content: Text("User Deleted"))),
+                      //                 // Navigator.pop(context)
+                      //               );
+                      //         },
+                      //         style: ElevatedButton.styleFrom(
+                      //           backgroundColor: Colors.red,
+                      //           elevation: 5,
+                      //         ),
+                      //         child: Text(
+                      //           "Delete",
+                      //           style: GoogleFonts.montserrat(
+                      //             fontSize: 20,
+                      //             fontWeight: FontWeight.w500,
+                      //           ),
+                      //         ),
+                      //       )
+                      //     : Container(),
                     ],
                   ),
                 ],
@@ -396,11 +432,10 @@ class _UserAddPageState extends State<UserAddPage> {
         child: Center(
           child: Text(
             isAdmin == true ? 'Yes' : "No",
-            style: GoogleFonts.montserrat(
-              // color: Colors.b,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(
+                fontFamily: "Montserrat",
+                fontSize: 20,
+                fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -427,11 +462,10 @@ class _UserAddPageState extends State<UserAddPage> {
         child: Center(
           child: Text(
             isActive == true ? 'Yes' : "No",
-            style: GoogleFonts.montserrat(
-              // color: Colors.b,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(
+                fontFamily: "Montserrat",
+                fontSize: 20,
+                fontWeight: FontWeight.w600),
           ),
         ),
       ),
