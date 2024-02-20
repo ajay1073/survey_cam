@@ -24,6 +24,10 @@ import 'firebase_options.dart';
 import 'package:path/path.dart' as path;
 
 void main() async {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -722,12 +726,12 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
         await Future.delayed(const Duration(milliseconds: 2500));
         if (isChecked == true) {
           // print("With Resize");
-          await captureAndSave();
+          captureAndSave();
           save();
           // _captureImage();
         } else {
           // print("without resize");
-          await captureAndSaveWithoutResize();
+          captureAndSaveWithoutResize();
           save();
           // _captureImage();
         }
