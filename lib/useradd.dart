@@ -1,15 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mycam/usermodel.dart';
+import 'package:flutter/widgets.dart';
+import 'package:survey_cam/model/usermodel.dart';
 import 'package:uuid/uuid.dart';
 
 class UserAddPage extends StatefulWidget {
   UserModel? model;
-  UserAddPage(this.model);
+  UserAddPage(
+    this.model,
+  );
 
   @override
   State<UserAddPage> createState() => _UserAddPageState();
@@ -21,6 +21,12 @@ class _UserAddPageState extends State<UserAddPage> {
   final _formkey = GlobalKey<FormState>();
   TextEditingController userNameController = TextEditingController();
   TextEditingController userMobileController = TextEditingController();
+  TextEditingController deviceIdController = TextEditingController();
+  bool status = false;
+  String? phone;
+  String? deviceid;
+  String? query;
+  String? userID;
   Country selectedCountry = Country(
     phoneCode: "91",
     countryCode: "IN",
@@ -38,12 +44,23 @@ class _UserAddPageState extends State<UserAddPage> {
     if (widget.model != null) {
       userNameController.text = widget.model!.userName;
       userMobileController.text = widget.model!.userPhone;
+      deviceIdController.text = widget.model!.deviceID;
       isActive = widget.model!.isActive;
       isAdmin = widget.model!.isAdmin;
     } else {
       print("New");
     }
   }
+
+  // checkRequest() {
+  //   if (widget.model2 != null) {
+  //     phone = widget.model2!.userPhone;
+  //     deviceid = widget.model2!.deviceID;
+  //     query = widget.model2!.query;
+  //     userID = widget.model2!.userID;
+  //     status = widget.model2!.status;
+  //   }
+  // }
 
   @override
   void initState() {
@@ -99,6 +116,11 @@ class _UserAddPageState extends State<UserAddPage> {
                         color: Colors.black,
                         fontWeight: FontWeight.w500),
                     controller: userNameController,
+                    onChanged: (value) {
+                      setState(() {
+                        userNameController.text = value;
+                      });
+                    },
                     decoration: InputDecoration(
                       labelStyle: TextStyle(
                           color: Colors.black,
@@ -145,61 +167,201 @@ class _UserAddPageState extends State<UserAddPage> {
                   SizedBox(
                     height: screenSize.height * 0.035,
                   ),
+                  widget.model == null
+                      ? TextFormField(
+                          onChanged: (value) {
+                            setState(() {
+                              userMobileController.text = value;
+                            });
+                          },
+                          style: TextStyle(
+                              fontFamily: "Montserrat",
+                              fontSize: screenSize.height * 0.0225,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500),
+                          keyboardType: TextInputType.phone,
+                          controller: userMobileController,
+                          decoration: InputDecoration(
+                            suffixIcon: userMobileController.text.length > 9
+                                ? const Icon(
+                                    Icons.phone,
+                                    color: Colors.green,
+                                  )
+                                : const Icon(
+                                    Icons.phone,
+                                    color: Colors.black,
+                                  ),
+                            prefixIcon: Container(
+                              width: screenSize.width * 0.29,
+                              child: InkWell(
+                                onTap: () {
+                                  showCountryPicker(
+                                      countryListTheme:
+                                          const CountryListThemeData(
+                                        bottomSheetHeight: 500,
+                                      ),
+                                      context: context,
+                                      onSelect: (value) {
+                                        setState(() {
+                                          selectedCountry = value;
+                                        });
+                                      });
+                                },
+                                child: Row(
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                          top: screenSize.height * 0.014,
+                                          bottom: screenSize.height * 0.014,
+                                          left: screenSize.width * 0.031,
+                                          right: screenSize.width * 0.01),
+                                      child: Text(
+                                        "${selectedCountry.flagEmoji} + ${selectedCountry.phoneCode}",
+                                        style: TextStyle(
+                                            fontFamily: "Montserrat",
+                                            fontSize:
+                                                screenSize.height * 0.0225,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                    Text(
+                                      "l",
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: screenSize.height * 0.07,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w300),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            labelStyle: TextStyle(
+                                color: Colors.black,
+                                fontFamily: "Montserrat",
+                                fontSize: screenSize.height * 0.025,
+                                fontWeight: FontWeight.w500),
+                            alignLabelWithHint: true,
+                            labelText: "User Phone",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            enabledBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            focusedBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            errorBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.red,
+                              ),
+                            ),
+                            focusedErrorBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value!.length < 13 || value.isEmpty) {
+                              return "Please Enter valid Phone Number";
+                            }
+                            return null;
+                          },
+                        )
+                      : TextFormField(
+                          onChanged: (value) {
+                            setState(() {
+                              userMobileController.text = value;
+                            });
+                          },
+                          style: TextStyle(
+                              fontFamily: "Montserrat",
+                              fontSize: screenSize.height * 0.0225,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500),
+                          keyboardType: TextInputType.phone,
+                          controller: userMobileController,
+                          decoration: InputDecoration(
+                            suffixIcon: const Icon(
+                              Icons.phone,
+                              color: Colors.black,
+                            ),
+                            labelStyle: TextStyle(
+                                color: Colors.black,
+                                fontFamily: "Montserrat",
+                                fontSize: screenSize.height * 0.025,
+                                fontWeight: FontWeight.w500),
+                            alignLabelWithHint: true,
+                            labelText: "User Phone",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            enabledBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            focusedBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            errorBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.red,
+                              ),
+                            ),
+                            focusedErrorBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value!.length < 10 || value.isEmpty) {
+                              return "Please Enter valid Phone Number";
+                            }
+                            return null;
+                          },
+                        ),
+                  SizedBox(
+                    height: screenSize.height * 0.0125,
+                  ),
                   TextFormField(
-                    onChanged: (value) {
-                      setState(() {
-                        userMobileController.text = value;
-                      });
-                    },
                     style: TextStyle(
                         fontFamily: "Montserrat",
                         fontSize: screenSize.height * 0.0225,
                         color: Colors.black,
                         fontWeight: FontWeight.w500),
-                    keyboardType: TextInputType.phone,
-                    controller: userMobileController,
+                    controller: deviceIdController,
+                    onChanged: (value) {
+                      setState(() {
+                        deviceIdController.text = value;
+                      });
+                    },
                     decoration: InputDecoration(
-                      suffixIcon: userMobileController.text.length > 9
-                          ? const Icon(
-                              Icons.phone,
-                              color: Colors.green,
-                            )
-                          : const Icon(
-                              Icons.phone,
-                              color: Colors.black,
-                            ),
-                      prefixIcon: Container(
-                        padding: const EdgeInsets.all(11.5),
-                        child: InkWell(
-                          onTap: () {
-                            showCountryPicker(
-                                countryListTheme: const CountryListThemeData(
-                                  bottomSheetHeight: 500,
-                                ),
-                                context: context,
-                                onSelect: (value) {
-                                  setState(() {
-                                    selectedCountry = value;
-                                  });
-                                });
-                          },
-                          child: Text(
-                            "${selectedCountry.flagEmoji} + ${selectedCountry.phoneCode}",
-                            style: TextStyle(
-                                fontFamily: "Montserrat",
-                                fontSize: screenSize.height * 0.0225,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ),
                       labelStyle: TextStyle(
                           color: Colors.black,
                           fontFamily: "Montserrat",
                           fontSize: screenSize.height * 0.025,
                           fontWeight: FontWeight.w500),
                       alignLabelWithHint: true,
-                      labelText: "User Phone",
+                      labelText: "Device ID",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -229,14 +391,14 @@ class _UserAddPageState extends State<UserAddPage> {
                       ),
                     ),
                     validator: (value) {
-                      if (value!.length < 10 || value.isEmpty) {
-                        return "Please Enter valid Phone Number";
+                      if (value!.isEmpty) {
+                        return "Please Enter Valid Name";
                       }
                       return null;
                     },
                   ),
                   SizedBox(
-                    height: screenSize.height * 0.035,
+                    height: screenSize.height * 0.0125,
                   ),
                   Container(
                     height: screenSize.height * 0.075,
@@ -266,7 +428,7 @@ class _UserAddPageState extends State<UserAddPage> {
                     ),
                   ),
                   SizedBox(
-                    height: screenSize.height * 0.035,
+                    height: screenSize.height * 0.0125,
                   ),
                   Container(
                     height: screenSize.height * 0.075,
@@ -312,10 +474,12 @@ class _UserAddPageState extends State<UserAddPage> {
                                   .doc(userId)
                                   .set({
                                 "name": userNameController.text,
-                                "phone": userMobileController.text,
+                                "phone": selectedCountry.phoneCode +
+                                    userMobileController.text,
                                 "user_id": userId,
                                 "is_active": isActive,
                                 "is_admin": isAdmin,
+                                "device_id": deviceIdController.text,
                               }).then((value) => {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(const SnackBar(
@@ -331,6 +495,7 @@ class _UserAddPageState extends State<UserAddPage> {
                                 "phone": userMobileController.text,
                                 "is_active": isActive,
                                 "is_admin": isAdmin,
+                                "device_id": deviceIdController.text
                               }).then((value) => {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(const SnackBar(
@@ -359,14 +524,16 @@ class _UserAddPageState extends State<UserAddPage> {
                                     style: TextStyle(
                                         fontFamily: "Montserrat",
                                         fontSize: screenSize.height * 0.025,
-                                        fontWeight: FontWeight.w500),
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white),
                                   )
                                 : Text(
                                     "Edit User",
                                     style: TextStyle(
                                         fontFamily: "Montserrat",
                                         fontSize: screenSize.height * 0.025,
-                                        fontWeight: FontWeight.w500),
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white),
                                   )),
                       ),
                       // widget.model != null

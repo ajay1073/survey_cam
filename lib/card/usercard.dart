@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mycam/useradd.dart';
-import 'package:mycam/usermodel.dart';
+import 'package:survey_cam/useradd.dart';
+import 'package:survey_cam/model/usermodel.dart';
 
 class UserCard extends StatelessWidget {
   final UserModel model;
@@ -78,7 +77,27 @@ class UserCard extends StatelessWidget {
                         right: screenSize.width * 0.028,
                       ),
                       child: Text(
-                        "ID: ${model.userID}",
+                        "User-ID: ${model.userID}",
+                        style: TextStyle(
+                            fontFamily: "Montserrat",
+                            fontSize: screenSize.height * 0.025,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    Divider(
+                      color:
+                          model.isActive == true ? Colors.yellow : Colors.white,
+                      endIndent: 10,
+                      indent: 10,
+                      thickness: 1,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: screenSize.width * 0.028,
+                        right: screenSize.width * 0.028,
+                      ),
+                      child: Text(
+                        "Device-ID: ${model.deviceID}",
                         style: TextStyle(
                             fontFamily: "Montserrat",
                             fontSize: screenSize.height * 0.025,
@@ -145,7 +164,8 @@ class UserCard extends StatelessWidget {
                                 style: TextStyle(
                                     fontFamily: "Montserrat",
                                     fontSize: screenSize.height * 0.025,
-                                    fontWeight: FontWeight.w500),
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white),
                               ))),
                     )
                   ],

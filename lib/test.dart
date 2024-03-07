@@ -151,7 +151,7 @@ class _CameraAppState extends State<CameraApp> {
     img.Image timestampImageBytes = img.decodeImage(uint8List)!;
 
     // Copy the timestamp image to the original image
-    img.copyInto(image, timestampImageBytes, blend: true);
+    // img.copyInto(image, timestampImageBytes, blend: true);
 
     // Clean up resources
     // recorder.close();

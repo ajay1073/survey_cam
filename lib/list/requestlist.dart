@@ -1,32 +1,37 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:mycam/useradd.dart';
-import 'package:mycam/usercard.dart';
-import 'package:mycam/usermodel.dart';
+import 'package:survey_cam/card/requestcard.dart';
+import 'package:survey_cam/list/userlist.dart';
+import 'package:survey_cam/model/requestmodel.dart';
 
-class UserListPage extends StatefulWidget {
-  const UserListPage({super.key});
+class RequestList extends StatefulWidget {
+  const RequestList({super.key});
 
   @override
-  State<UserListPage> createState() => _UserListPageState();
+  State<RequestList> createState() => _RequestListState();
 }
 
-class _UserListPageState extends State<UserListPage> {
+class _RequestListState extends State<RequestList> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
+        label: Text("User List",
+            style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: screenSize.height * 0.022,
+                fontWeight: FontWeight.w500,
+                color: Colors.white)),
         onPressed: () {
           Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => UserAddPage(null)));
+              .push(MaterialPageRoute(builder: (context) => UserListPage()));
         },
       ),
       appBar: AppBar(
         title: Text(
-          "User List",
+          "Request List",
           style: TextStyle(
               fontFamily: "Montserrat",
               fontSize: screenSize.height * 0.03125,
@@ -40,7 +45,7 @@ class _UserListPageState extends State<UserListPage> {
             Container(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
-                    .collection("users")
+                    .collection("request")
                     // .orderBy(field)
                     .snapshots(),
                 builder: (context, snapshot) {
@@ -59,8 +64,8 @@ class _UserListPageState extends State<UserListPage> {
                         shrinkWrap: true,
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index) {
-                          return UserCard(
-                              model: UserModel.fromfirestore(
+                          return RequestCard(
+                              model: RequestModel.fromfirestore(
                                   snapshot.data!.docs[index]),
                               context: context);
                         });
