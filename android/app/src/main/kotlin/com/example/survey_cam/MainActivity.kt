@@ -1,4 +1,4 @@
-package com.example.survey_cam
+package com.survey.camapp
 
 import io.flutter.embedding.android.FlutterActivity
 
