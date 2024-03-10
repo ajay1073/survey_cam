@@ -34,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isAdmin = false;
   bool numberExist = true;
   String selectedQuery = "--Select Query--";
+  String role = "";
   List<String> query = <String>[
     "--Select Query--",
     "Not an Active Member",
@@ -119,21 +120,40 @@ class _LoginScreenState extends State<LoginScreen> {
           if (deviceSame == true) {
             isAdmin = await checkadmin(storedPhone);
             if (isAdmin == true) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => CaptureAndStampImage(
-                          role: "Admin",
-                        )),
-              );
+              role = "Admin";
             } else {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => CaptureAndStampImage(
-                          role: "User",
-                        )),
-              );
+              role = "User";
+            }
+            QuerySnapshot<Map<String, dynamic>> snapshot =
+                await FirebaseFirestore.instance
+                    .collection("users")
+                    .where("phone", isEqualTo: storedPhone)
+                    .get();
+
+            if (snapshot.docs.isNotEmpty) {
+              // Assuming phone numbers are unique, so there should be at most one document
+              DocumentSnapshot<Map<String, dynamic>> userDocument =
+                  snapshot.docs.first;
+              String userId = userDocument.id;
+              print('User ID: $userId');
+
+              prefs.setBool("isLoggedIn", true);
+              FirebaseFirestore.instance
+                  .collection("users")
+                  .doc(userId)
+                  .update({
+                "last_used": DateTime.now(),
+              }).then((value) => {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Welcome Back!"))),
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => CaptureAndStampImage(
+                                    role: role,
+                                  )),
+                        ),
+                      });
             }
           } else {
             showDialog(
@@ -560,46 +580,29 @@ class _LoginScreenState extends State<LoginScreen> {
       isAdmin = await checkadmin(
           '+${selectedCountry.phoneCode}${phoneController.text}');
       if (isAdmin == true) {
-        await FirebaseAuth.instance.verifyPhoneNumber(
-          phoneNumber: '+${selectedCountry.phoneCode}${phoneController.text}',
-          verificationCompleted: (PhoneAuthCredential credential) {},
-          verificationFailed: (FirebaseAuthException e) {},
-          codeSent: (String verificationId, int? resendToken) {
-            // SignUpPage.verify = verificationId;
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => OTPPage(
-                          phoneNumber:
-                              "+${selectedCountry.phoneCode}${phoneController.text}",
-                          verificationID: verificationId,
-                          deviceID: deviceId.toString(),
-                          role: "Admin",
-                        )));
-          },
-          codeAutoRetrievalTimeout: (String verificationId) {},
-        );
+        role = "Admin";
       } else {
-        await FirebaseAuth.instance.verifyPhoneNumber(
-          phoneNumber: '+${selectedCountry.phoneCode}${phoneController.text}',
-          verificationCompleted: (PhoneAuthCredential credential) {},
-          verificationFailed: (FirebaseAuthException e) {},
-          codeSent: (String verificationId, int? resendToken) {
-            // SignUpPage.verify = verificationId;
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => OTPPage(
-                          phoneNumber:
-                              "+${selectedCountry.phoneCode}${phoneController.text}",
-                          verificationID: verificationId,
-                          deviceID: deviceId.toString(),
-                          role: "User",
-                        )));
-          },
-          codeAutoRetrievalTimeout: (String verificationId) {},
-        );
+        role = "User";
       }
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: '+${selectedCountry.phoneCode}${phoneController.text}',
+        verificationCompleted: (PhoneAuthCredential credential) {},
+        verificationFailed: (FirebaseAuthException e) {},
+        codeSent: (String verificationId, int? resendToken) {
+          // SignUpPage.verify = verificationId;
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => OTPPage(
+                        phoneNumber:
+                            "+${selectedCountry.phoneCode}${phoneController.text}",
+                        verificationID: verificationId,
+                        deviceID: deviceId.toString(),
+                        role: role,
+                      )));
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
+      );
 
       // User not found, proceed with the sign-up process
 

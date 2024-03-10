@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:survey_cam/model/usermodel.dart';
 import 'package:uuid/uuid.dart';
+import 'package:http/http.dart' as http;
 
 class UserAddPage extends StatefulWidget {
   UserModel? model;
@@ -49,6 +50,16 @@ class _UserAddPageState extends State<UserAddPage> {
       isAdmin = widget.model!.isAdmin;
     } else {
       print("New");
+    }
+  }
+
+  Future<bool> checkInternetConnectivity() async {
+    try {
+      final response = await http.get(Uri.parse('https://www.google.com'));
+      return response.statusCode == 200;
+    } catch (e) {
+      print(e);
+      return false;
     }
   }
 
@@ -466,48 +477,61 @@ class _UserAddPageState extends State<UserAddPage> {
                       ElevatedButton(
                         onPressed: () async {
                           if (_formkey.currentState?.validate() == true) {
-                            if (widget.model == null) {
-                              var uid = const Uuid();
-                              String userId = uid.v4();
-                              FirebaseFirestore.instance
-                                  .collection("users")
-                                  .doc(userId)
-                                  .set({
-                                "name": userNameController.text,
-                                "phone": selectedCountry.phoneCode +
-                                    userMobileController.text,
-                                "user_id": userId,
-                                "is_active": isActive,
-                                "is_admin": isAdmin,
-                                "device_id": deviceIdController.text,
-                              }).then((value) => {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(const SnackBar(
-                                                content: Text("User Added"))),
-                                        Navigator.pop(context),
-                                      });
+                            bool isConnected =
+                                await checkInternetConnectivity();
+                            if (isConnected == false) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      "No internet connection. Please try again."),
+                                ),
+                              );
                             } else {
-                              FirebaseFirestore.instance
-                                  .collection("users")
-                                  .doc(widget.model!.userID)
-                                  .update({
-                                "name": userNameController.text,
-                                "phone": userMobileController.text,
-                                "is_active": isActive,
-                                "is_admin": isAdmin,
-                                "device_id": deviceIdController.text
-                              }).then((value) => {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(const SnackBar(
-                                                content: Text("User Updated"))),
-                                        Navigator.pop(context),
-                                      });
+                              if (widget.model == null) {
+                                var uid = const Uuid();
+                                String userId = uid.v4();
+                                FirebaseFirestore.instance
+                                    .collection("users")
+                                    .doc(userId)
+                                    .set({
+                                  "name": userNameController.text,
+                                  "phone": selectedCountry.phoneCode +
+                                      userMobileController.text,
+                                  "user_id": userId,
+                                  "is_active": isActive,
+                                  "is_admin": isAdmin,
+                                  "device_id": deviceIdController.text,
+                                  "last_used": DateTime.now()
+                                }).then((value) => {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text("User Added"))),
+                                          Navigator.pop(context),
+                                        });
+                              } else {
+                                FirebaseFirestore.instance
+                                    .collection("users")
+                                    .doc(widget.model!.userID)
+                                    .update({
+                                  "name": userNameController.text,
+                                  "phone": userMobileController.text,
+                                  "is_active": isActive,
+                                  "is_admin": isAdmin,
+                                  "device_id": deviceIdController.text
+                                }).then((value) => {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content:
+                                                      Text("User Updated"))),
+                                          Navigator.pop(context),
+                                        });
+                              }
+                              setState(() {
+                                widget.model = null;
+                              });
+                              userMobileController.clear();
+                              userNameController.clear();
                             }
-                            setState(() {
-                              widget.model = null;
-                            });
-                            userMobileController.clear();
-                            userNameController.clear();
                           }
                         },
                         style: ElevatedButton.styleFrom(

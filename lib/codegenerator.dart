@@ -160,7 +160,9 @@ class _CodeGeneratorScreenState extends State<CodeGeneratorScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const UserListPage()),
+                        builder: (context) => UserListPage(
+                              search: false,
+                            )),
                   );
                 },
                 style: ElevatedButton.styleFrom(

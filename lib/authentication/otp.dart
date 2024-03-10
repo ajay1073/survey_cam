@@ -184,6 +184,7 @@ class _OTPPageState extends State<OTPPage> {
                                   "device_id": widget.deviceID,
                                   "is_active": isActive,
                                   "is_admin": isAdmin,
+                                  "last_used": DateTime.now()
                                 }).then((value) => {
                                           prefs.setBool("isLoggedIn", true),
                                           ScaffoldMessenger.of(context)
@@ -199,18 +200,41 @@ class _OTPPageState extends State<OTPPage> {
                                           ),
                                         });
                               } else {
-                                prefs.setBool("isLoggedIn", true);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text("User Verified")));
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          CaptureAndStampImage(
-                                            role: widget.role,
-                                          )),
-                                );
+                                QuerySnapshot<Map<String, dynamic>> snapshot =
+                                    await FirebaseFirestore.instance
+                                        .collection("users")
+                                        .where("phone",
+                                            isEqualTo: widget.phoneNumber)
+                                        .get();
+
+                                if (snapshot.docs.isNotEmpty) {
+                                  // Assuming phone numbers are unique, so there should be at most one document
+                                  DocumentSnapshot<Map<String, dynamic>>
+                                      userDocument = snapshot.docs.first;
+                                  String userId = userDocument.id;
+                                  print('User ID: $userId');
+
+                                  prefs.setBool("isLoggedIn", true);
+                                  FirebaseFirestore.instance
+                                      .collection("users")
+                                      .doc(userId)
+                                      .update({
+                                    "last_used": DateTime.now(),
+                                  }).then((value) => {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(const SnackBar(
+                                                    content:
+                                                        Text("User Verified"))),
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      CaptureAndStampImage(
+                                                        role: widget.role,
+                                                      )),
+                                            ),
+                                          });
+                                }
                               }
                             }
                           } on FirebaseAuthException catch (e) {

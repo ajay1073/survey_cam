@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:survey_cam/authentication/login.dart';
-import 'package:survey_cam/camerapage.dart';
 
 import 'firebase_options.dart';
 

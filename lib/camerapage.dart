@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
@@ -36,6 +35,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
   final GlobalKey key = GlobalKey();
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
+  late Color plateColor = Colors.white;
   late Color currentColor = Colors.orange;
   late Color pickerColor = Colors.purple;
   bool? isChecked = true;
@@ -242,386 +242,363 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
             borderRadius: BorderRadius.circular(screenSize.height *
                 0.05), // Adjust the value based on your preference
           ),
-          child: widget.role == "Admin"
-              ? SpeedDial(
-                  // childMargin: EdgeInsets.all(10),
-                  icon: (Icons.menu_book),
-                  iconTheme: const IconThemeData(color: Colors.white),
-                  backgroundColor: Colors.black,
-                  overlayColor: Colors.black,
-                  overlayOpacity: 0.4,
-                  childrenButtonSize:
-                      Size(screenSize.width * 0.15, screenSize.height * 0.1),
+          child: SpeedDial(
+            // childMargin: EdgeInsets.all(10),
+            icon: (Icons.menu_book),
+            iconTheme: const IconThemeData(color: Colors.white),
+            backgroundColor: Colors.black,
+            overlayColor: Colors.black,
+            overlayOpacity: 0.4,
+            childrenButtonSize:
+                Size(screenSize.width * 0.15, screenSize.height * 0.1),
 
-                  children: [
-                    SpeedDialChild(
-                      shape: const CircleBorder(),
-                      child: const Icon(Icons.image_search),
-                      label: "Pick Images",
-                      labelStyle: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: screenSize.height * 0.022,
-                          fontWeight: FontWeight.w500),
-                      onTap: () {
-                        _pickImages();
-                      },
-                    ),
-                    SpeedDialChild(
-                      shape: const CircleBorder(),
-                      child: const Icon(Icons.share),
-                      label: "Share Images",
-                      labelStyle: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: screenSize.height * 0.022,
-                          fontWeight: FontWeight.w500),
-                      onTap: () {
-                        if (_selectedImages != null) {
-                          _shareImages();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('No Images Selected')));
-                        }
-                      },
-                    ),
-                    SpeedDialChild(
-                      shape: const CircleBorder(),
-                      child: const Icon(Icons.settings),
-                      label: "Settings",
-                      labelStyle: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: screenSize.height * 0.022,
-                          fontWeight: FontWeight.w500),
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return CheckboxDialog(
-                                onCheckbox1Changed: (value) async {
-                                  setState(() {
-                                    isSeparate = value;
-                                  });
-                                  var prefs =
-                                      await SharedPreferences.getInstance();
-                                  prefs.setBool('separate', isSeparate!);
-                                },
-                                onCheckbox2Changed: (value) async {
-                                  setState(() {
-                                    isLocation = value;
-                                  });
-                                  var prefs =
-                                      await SharedPreferences.getInstance();
-                                  prefs.setBool('location', isLocation!);
-                                },
-                                onCheckbox3Changed: (value) async {
-                                  setState(() {
-                                    isDate = value;
-                                  });
-                                  var prefs =
-                                      await SharedPreferences.getInstance();
-                                  prefs.setBool('date', isDate!);
-                                },
-                                onCheckbox4Changed: (value) async {
-                                  setState(() {
-                                    isName = value;
-                                  });
-                                  var prefs =
-                                      await SharedPreferences.getInstance();
-                                  prefs.setBool('name', isName!);
-                                },
-                                onCheckbox5Changed: (value) async {
-                                  setState(() {
-                                    isPlate = value;
-                                  });
-                                  var prefs =
-                                      await SharedPreferences.getInstance();
-                                  prefs.setBool('background', isPlate!);
-                                },
-                                onFontChanged: (value) async {
-                                  setState(() {
-                                    selectedFont = value;
-                                  });
-                                  var prefs =
-                                      await SharedPreferences.getInstance();
-                                  prefs.setString('font', selectedFont);
-                                },
-                                onSizeChanged: (value) async {
-                                  setState(() {
-                                    size = value;
-                                  });
-                                  var prefs =
-                                      await SharedPreferences.getInstance();
-                                  prefs.setDouble('fontSize', size);
-                                },
-                              );
+            children: [
+              SpeedDialChild(
+                shape: const CircleBorder(),
+                child: const Icon(Icons.image_search),
+                label: "Pick Images",
+                labelStyle: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: screenSize.height * 0.022,
+                    fontWeight: FontWeight.w500),
+                onTap: () {
+                  _pickImages();
+                },
+              ),
+              SpeedDialChild(
+                shape: const CircleBorder(),
+                child: const Icon(Icons.share),
+                label: "Share Images",
+                labelStyle: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: screenSize.height * 0.022,
+                    fontWeight: FontWeight.w500),
+                onTap: () {
+                  if (_selectedImages != null) {
+                    _shareImages();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No Images Selected')));
+                  }
+                },
+              ),
+              SpeedDialChild(
+                shape: const CircleBorder(),
+                child: const Icon(Icons.settings),
+                label: "Settings",
+                labelStyle: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: screenSize.height * 0.022,
+                    fontWeight: FontWeight.w500),
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return CheckboxDialog(
+                          onCheckbox1Changed: (value) async {
+                            setState(() {
+                              isSeparate = value;
                             });
-                      },
-                    ),
-                    SpeedDialChild(
-                      shape: const CircleBorder(),
-                      child: const Icon(Icons.info_outline),
-                      label: "Help",
-                      labelStyle: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: screenSize.height * 0.022,
-                          fontWeight: FontWeight.w500),
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                // contentPadding: EdgeInsets.symmetric(vertical: 100.0),
-                                title: Text(
-                                  "Help",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontFamily: "Montserrat",
-                                      fontSize: screenSize.height * 0.03,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                content: Container(
-                                  height: 400,
-                                  // width: 500,
-                                  child: SingleChildScrollView(
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          "1. This application is use to save photo with DateTime Stamp, GPS Location Stamp and Folder name Stamp.",
-                                          style: TextStyle(
-                                              fontFamily: "Montserrat",
-                                              fontSize:
-                                                  screenSize.height * 0.019,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        SizedBox(
-                                            height: screenSize.height * 0.0125,
-                                            child: const Divider(
-                                              color: Colors.grey,
-                                              thickness: 0.5,
-                                            )),
-                                        Text(
-                                          "2. Prefered folder name and image will be saved in named folder. To remove the Folder Name stamp from image, uncheck the box at the right side of the Folder Name field.",
-                                          style: TextStyle(
-                                              fontFamily: "Montserrat",
-                                              fontSize:
-                                                  screenSize.height * 0.019,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        SizedBox(
-                                            height: screenSize.height * 0.0125,
-                                            child: const Divider(
-                                              color: Colors.grey,
-                                              thickness: 0.5,
-                                            )),
-                                        Text(
-                                          "3. Image can be resize in the size available in the Drop Down menu. To save original image uncheck the box at the right side of the resize field.",
-                                          style: TextStyle(
-                                              fontFamily: "Montserrat",
-                                              fontSize:
-                                                  screenSize.height * 0.019,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        SizedBox(
-                                            height: screenSize.height * 0.0125,
-                                            child: const Divider(
-                                              color: Colors.grey,
-                                              thickness: 0.5,
-                                            )),
-                                        Text(
-                                          "4. To share the images follow below steps:-",
-                                          style: TextStyle(
-                                              fontFamily: "Montserrat",
-                                              fontSize:
-                                                  screenSize.height * 0.019,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                              left: screenSize.width * 0.0277,
-                                              top: screenSize.height * 0.00625),
-                                          child: Text(
-                                            "4.1. Firstly pick the images you want to share with the help of Pick Image option.",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                              left: screenSize.width * 0.0277,
-                                              top: screenSize.height * 0.00625),
-                                          child: Text(
-                                            "4.2. After picking the desired image click on Share Images to see and share on all available options.",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                            height: screenSize.height * 0.0125,
-                                            child: const Divider(
-                                              color: Colors.grey,
-                                              thickness: 0.5,
-                                            )),
-                                        Text(
-                                          "5. Default settings can be change in following steps.",
-                                          style: TextStyle(
-                                              fontFamily: "Montserrat",
-                                              fontSize:
-                                                  screenSize.height * 0.019,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                              left: screenSize.width * 0.0277,
-                                              top: screenSize.height * 0.00625),
-                                          child: Text(
-                                            "5.1. If blank images issue occur, change the settings to save image individually. Use the button Save Image to save the image.",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                              left: screenSize.width * 0.0277,
-                                              top: screenSize.height * 0.00625),
-                                          child: Text(
-                                            "5.2. To save the GPS Location stamping check or uncheck the GPS Stamp checkbox",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                              left: screenSize.width * 0.0277,
-                                              top: screenSize.height * 0.00625),
-                                          child: Text(
-                                            "5.3. To save the Date-Time stamping check or uncheck the Date-Time Stamp checkbox",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                              left: screenSize.width * 0.0277,
-                                              top: screenSize.height * 0.00625),
-                                          child: Text(
-                                            "5.3. To save last used folder check or uncheck the Last Save Folder checkbox",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                            height: screenSize.height * 0.0125,
-                                            child: const Divider(
-                                              color: Colors.grey,
-                                              thickness: 0.5,
-                                            )),
-                                        Text(
-                                          "6. All saved images can be accessed from following directory:-",
-                                          style: TextStyle(
-                                              fontFamily: "Montserrat",
-                                              fontSize:
-                                                  screenSize.height * 0.019,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                              left: screenSize.width * 0.0277,
-                                              top: screenSize.height * 0.00625),
-                                          child: Text(
-                                            "6.1. With Folder Name: \n /storage/emulated/0/Pictures/FOLDERNAME",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                              left: screenSize.width * 0.0277,
-                                              top: screenSize.height * 0.00625),
-                                          child: Text(
-                                            "6.2. Without Folde Name: \n /storage/emulated/0/Pictures",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                            height: screenSize.height * 0.0125,
-                                            child: const Divider(
-                                              color: Colors.grey,
-                                              thickness: 0.5,
-                                            )),
-                                        Text(
-                                          "7. Reviews and Feedbacks are welcome at \nmycamfeedback@gmail.com",
-                                          style: TextStyle(
-                                              fontFamily: "Montserrat",
-                                              fontSize:
-                                                  screenSize.height * 0.019,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        SizedBox(
-                                            height: screenSize.height * 0.0375,
-                                            child: const Divider(
-                                              color: Colors.grey,
-                                              thickness: 0.5,
-                                            )),
-                                        const Text(
-                                          "Thank you for using MyCam.",
-                                          style: TextStyle(
-                                              fontFamily: "Montserrat",
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        SizedBox(
-                                            height: screenSize.height * 0.0125,
-                                            child: const Divider(
-                                              color: Colors.grey,
-                                              thickness: 0.5,
-                                            )),
-                                      ],
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.setBool('separate', isSeparate!);
+                          },
+                          onCheckbox2Changed: (value) async {
+                            setState(() {
+                              isLocation = value;
+                            });
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.setBool('location', isLocation!);
+                          },
+                          onCheckbox3Changed: (value) async {
+                            setState(() {
+                              isDate = value;
+                            });
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.setBool('date', isDate!);
+                          },
+                          onCheckbox4Changed: (value) async {
+                            setState(() {
+                              isPlate = value;
+                            });
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.setBool('plate', isPlate!);
+                          },
+                          onCheckbox5Changed: (value) async {
+                            setState(() {
+                              isName = value;
+                            });
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.setBool('name', isName!);
+                          },
+                          onFontChanged: (value) async {
+                            setState(() {
+                              selectedFont = value;
+                            });
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.setString('font', selectedFont);
+                          },
+                          onSizeChanged: (value) async {
+                            setState(() {
+                              size = value;
+                            });
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.setDouble('fontSize', size);
+                          },
+                        );
+                      });
+                },
+              ),
+              SpeedDialChild(
+                shape: const CircleBorder(),
+                child: const Icon(Icons.info_outline),
+                label: "Help",
+                labelStyle: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: screenSize.height * 0.022,
+                    fontWeight: FontWeight.w500),
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          // contentPadding: EdgeInsets.symmetric(vertical: 100.0),
+                          title: Text(
+                            "Help",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontFamily: "Montserrat",
+                                fontSize: screenSize.height * 0.03,
+                                fontWeight: FontWeight.w500),
+                          ),
+                          content: Container(
+                            height: 400,
+                            // width: 500,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    "1. This application is use to save photo with DateTime Stamp, GPS Location Stamp and Vehicle Number Stamp.",
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: screenSize.height * 0.019,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  SizedBox(
+                                      height: screenSize.height * 0.0125,
+                                      child: const Divider(
+                                        color: Colors.grey,
+                                        thickness: 0.5,
+                                      )),
+                                  Text(
+                                    "2. Prefered Vehicle Number and image will be saved in named folder. To remove the Vehicle Number stamp from image, uncheck the box at the right side of the Vehicle Number field.",
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: screenSize.height * 0.019,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  SizedBox(
+                                      height: screenSize.height * 0.0125,
+                                      child: const Divider(
+                                        color: Colors.grey,
+                                        thickness: 0.5,
+                                      )),
+                                  Text(
+                                    "3. Image can be resize in the size available in the Drop Down menu. To save original image uncheck the box at the right side of the resize field.",
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: screenSize.height * 0.019,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  SizedBox(
+                                      height: screenSize.height * 0.0125,
+                                      child: const Divider(
+                                        color: Colors.grey,
+                                        thickness: 0.5,
+                                      )),
+                                  Text(
+                                    "4. To share the images follow below steps:-",
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: screenSize.height * 0.019,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        left: screenSize.width * 0.0277,
+                                        top: screenSize.height * 0.00625),
+                                    child: Text(
+                                      "4.1. Firstly pick the images you want to share with the help of Pick Image option.",
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: screenSize.height * 0.019,
+                                          fontWeight: FontWeight.w500),
                                     ),
                                   ),
-                                ),
-                                actions: [
-                                  Ink(
-                                    decoration: const ShapeDecoration(
-                                        shape: CircleBorder(
-                                            side: BorderSide(
-                                                color: Color(0xFF4C4F5E)))),
-                                    child: IconButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        icon: const Icon(Icons.close)),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        left: screenSize.width * 0.0277,
+                                        top: screenSize.height * 0.00625),
+                                    child: Text(
+                                      "4.2. After picking the desired image click on Share Images to see and share on all available options.",
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: screenSize.height * 0.019,
+                                          fontWeight: FontWeight.w500),
+                                    ),
                                   ),
+                                  SizedBox(
+                                      height: screenSize.height * 0.0125,
+                                      child: const Divider(
+                                        color: Colors.grey,
+                                        thickness: 0.5,
+                                      )),
+                                  Text(
+                                    "5. Default settings can be change in following steps.",
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: screenSize.height * 0.019,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        left: screenSize.width * 0.0277,
+                                        top: screenSize.height * 0.00625),
+                                    child: Text(
+                                      "5.1. If blank images issue occur, change the settings to save image individually. Use the button Save Image to save the image.",
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: screenSize.height * 0.019,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        left: screenSize.width * 0.0277,
+                                        top: screenSize.height * 0.00625),
+                                    child: Text(
+                                      "5.2. To save the GPS Location stamping check or uncheck the GPS Stamp checkbox",
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: screenSize.height * 0.019,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        left: screenSize.width * 0.0277,
+                                        top: screenSize.height * 0.00625),
+                                    child: Text(
+                                      "5.3. To save the Date-Time stamping check or uncheck the Date-Time Stamp checkbox",
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: screenSize.height * 0.019,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        left: screenSize.width * 0.0277,
+                                        top: screenSize.height * 0.00625),
+                                    child: Text(
+                                      "5.3. To save last used folder check or uncheck the Last Save Folder checkbox",
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: screenSize.height * 0.019,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                      height: screenSize.height * 0.0125,
+                                      child: const Divider(
+                                        color: Colors.grey,
+                                        thickness: 0.5,
+                                      )),
+                                  Text(
+                                    "6. All saved images can be accessed from following directory:-",
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: screenSize.height * 0.019,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        left: screenSize.width * 0.0277,
+                                        top: screenSize.height * 0.00625),
+                                    child: Text(
+                                      "6.1. With Vehicle Number: \n /storage/emulated/0/Pictures/VEHICLENUMBER",
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: screenSize.height * 0.019,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        left: screenSize.width * 0.0277,
+                                        top: screenSize.height * 0.00625),
+                                    child: Text(
+                                      "6.2. Without Vehicle Number: \n /storage/emulated/0/Pictures",
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: screenSize.height * 0.019,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                      height: screenSize.height * 0.0125,
+                                      child: const Divider(
+                                        color: Colors.grey,
+                                        thickness: 0.5,
+                                      )),
+                                  Text(
+                                    "7. Reviews and Feedbacks are welcome at \nmycamfeedback@gmail.com",
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: screenSize.height * 0.019,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  SizedBox(
+                                      height: screenSize.height * 0.0375,
+                                      child: const Divider(
+                                        color: Colors.grey,
+                                        thickness: 0.5,
+                                      )),
+                                  const Text(
+                                    "Thank you for using MyCam.",
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  SizedBox(
+                                      height: screenSize.height * 0.0125,
+                                      child: const Divider(
+                                        color: Colors.grey,
+                                        thickness: 0.5,
+                                      )),
                                 ],
-                              );
-                            });
-                      },
-                    ),
-                    SpeedDialChild(
+                              ),
+                            ),
+                          ),
+                          actions: [
+                            Ink(
+                              decoration: const ShapeDecoration(
+                                  shape: CircleBorder(
+                                      side: BorderSide(
+                                          color: Color(0xFF4C4F5E)))),
+                              child: IconButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  icon: const Icon(Icons.close)),
+                            ),
+                          ],
+                        );
+                      });
+                },
+              ),
+              widget.role == "Admin"
+                  ? SpeedDialChild(
                       shape: const CircleBorder(),
                       child: const Icon(Icons.lock_person),
                       label: "User Info",
@@ -637,402 +614,10 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                   const CodeGeneratorScreen()),
                         );
                       },
-                    ),
-                  ],
-                )
-              : SpeedDial(
-                  icon: (Icons.menu_book),
-                  iconTheme: const IconThemeData(color: Colors.white),
-                  backgroundColor: Colors.black,
-                  overlayColor: Colors.black,
-                  overlayOpacity: 0.4,
-                  childrenButtonSize:
-                      Size(screenSize.width * 0.15, screenSize.height * 0.1),
-                  children: [
-                      SpeedDialChild(
-                        shape: const CircleBorder(),
-                        child: const Icon(Icons.image_search),
-                        label: "Pick Images",
-                        labelStyle: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: screenSize.height * 0.022,
-                            fontWeight: FontWeight.w500),
-                        onTap: () {
-                          _pickImages();
-                        },
-                      ),
-                      SpeedDialChild(
-                        shape: const CircleBorder(),
-                        child: const Icon(Icons.share),
-                        label: "Share Images",
-                        labelStyle: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: screenSize.height * 0.022,
-                            fontWeight: FontWeight.w500),
-                        onTap: () {
-                          if (_selectedImages != null) {
-                            _shareImages();
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('No Images Selected')));
-                          }
-                        },
-                      ),
-                      SpeedDialChild(
-                        shape: const CircleBorder(),
-                        child: const Icon(Icons.settings),
-                        label: "Settings",
-                        labelStyle: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: screenSize.height * 0.022,
-                            fontWeight: FontWeight.w500),
-                        onTap: () {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return CheckboxDialog(
-                                  onCheckbox1Changed: (value) async {
-                                    setState(() {
-                                      isSeparate = value;
-                                    });
-                                    var prefs =
-                                        await SharedPreferences.getInstance();
-                                    prefs.setBool('separate', isSeparate!);
-                                  },
-                                  onCheckbox2Changed: (value) async {
-                                    setState(() {
-                                      isLocation = value;
-                                    });
-                                    var prefs =
-                                        await SharedPreferences.getInstance();
-                                    prefs.setBool('location', isLocation!);
-                                  },
-                                  onCheckbox3Changed: (value) async {
-                                    setState(() {
-                                      isDate = value;
-                                    });
-                                    var prefs =
-                                        await SharedPreferences.getInstance();
-                                    prefs.setBool('date', isDate!);
-                                  },
-                                  onCheckbox4Changed: (value) async {
-                                    setState(() {
-                                      isName = value;
-                                    });
-                                    var prefs =
-                                        await SharedPreferences.getInstance();
-                                    prefs.setBool('name', isName!);
-                                  },
-                                  onCheckbox5Changed: (value) async {
-                                    setState(() {
-                                      isPlate = value;
-                                    });
-                                    var prefs =
-                                        await SharedPreferences.getInstance();
-                                    prefs.setBool('background', isPlate!);
-                                  },
-                                  onFontChanged: (value) async {
-                                    setState(() {
-                                      selectedFont = value;
-                                    });
-                                    var prefs =
-                                        await SharedPreferences.getInstance();
-                                    prefs.setString('font', selectedFont);
-                                  },
-                                  onSizeChanged: (value) async {
-                                    setState(() {
-                                      size = value;
-                                    });
-                                    var prefs =
-                                        await SharedPreferences.getInstance();
-                                    prefs.setDouble('fontSize', size);
-                                  },
-                                );
-                              });
-                        },
-                      ),
-                      SpeedDialChild(
-                        shape: const CircleBorder(),
-                        child: const Icon(Icons.info_outline),
-                        label: "Help",
-                        labelStyle: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: screenSize.height * 0.022,
-                            fontWeight: FontWeight.w500),
-                        onTap: () {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  // contentPadding: EdgeInsets.symmetric(vertical: 100.0),
-                                  title: Text(
-                                    "Help",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontFamily: "Montserrat",
-                                        fontSize: screenSize.height * 0.03,
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                  content: Container(
-                                    height: 400,
-                                    // width: 500,
-                                    child: SingleChildScrollView(
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            "1. This application is use to save photo with DateTime Stamp, GPS Location Stamp and Folder name Stamp.",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  screenSize.height * 0.0125,
-                                              child: const Divider(
-                                                color: Colors.grey,
-                                                thickness: 0.5,
-                                              )),
-                                          Text(
-                                            "2. Prefered folder name and image will be saved in named folder. To remove the Folder Name stamp from image, uncheck the box at the right side of the Folder Name field.",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  screenSize.height * 0.0125,
-                                              child: const Divider(
-                                                color: Colors.grey,
-                                                thickness: 0.5,
-                                              )),
-                                          Text(
-                                            "3. Image can be resize in the size available in the Drop Down menu. To save original image uncheck the box at the right side of the resize field.",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  screenSize.height * 0.0125,
-                                              child: const Divider(
-                                                color: Colors.grey,
-                                                thickness: 0.5,
-                                              )),
-                                          Text(
-                                            "4. To share the images follow below steps:-",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                                left: screenSize.width * 0.0277,
-                                                top: screenSize.height *
-                                                    0.00625),
-                                            child: Text(
-                                              "4.1. Firstly pick the images you want to share with the help of Pick Image option.",
-                                              style: TextStyle(
-                                                  fontFamily: "Montserrat",
-                                                  fontSize:
-                                                      screenSize.height * 0.019,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                                left: screenSize.width * 0.0277,
-                                                top: screenSize.height *
-                                                    0.00625),
-                                            child: Text(
-                                              "4.2. After picking the desired image click on Share Images to see and share on all available options.",
-                                              style: TextStyle(
-                                                  fontFamily: "Montserrat",
-                                                  fontSize:
-                                                      screenSize.height * 0.019,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  screenSize.height * 0.0125,
-                                              child: const Divider(
-                                                color: Colors.grey,
-                                                thickness: 0.5,
-                                              )),
-                                          Text(
-                                            "5. Default settings can be change in following steps.",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                                left: screenSize.width * 0.0277,
-                                                top: screenSize.height *
-                                                    0.00625),
-                                            child: Text(
-                                              "5.1. If blank images issue occur, change the settings to save image individually. Use the button Save Image to save the image.",
-                                              style: TextStyle(
-                                                  fontFamily: "Montserrat",
-                                                  fontSize:
-                                                      screenSize.height * 0.019,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                                left: screenSize.width * 0.0277,
-                                                top: screenSize.height *
-                                                    0.00625),
-                                            child: Text(
-                                              "5.2. To save the GPS Location stamping check or uncheck the GPS Stamp checkbox",
-                                              style: TextStyle(
-                                                  fontFamily: "Montserrat",
-                                                  fontSize:
-                                                      screenSize.height * 0.019,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                                left: screenSize.width * 0.0277,
-                                                top: screenSize.height *
-                                                    0.00625),
-                                            child: Text(
-                                              "5.3. To save the Date-Time stamping check or uncheck the Date-Time Stamp checkbox",
-                                              style: TextStyle(
-                                                  fontFamily: "Montserrat",
-                                                  fontSize:
-                                                      screenSize.height * 0.019,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                                left: screenSize.width * 0.0277,
-                                                top: screenSize.height *
-                                                    0.00625),
-                                            child: Text(
-                                              "5.3. To save last used folder check or uncheck the Last Save Folder checkbox",
-                                              style: TextStyle(
-                                                  fontFamily: "Montserrat",
-                                                  fontSize:
-                                                      screenSize.height * 0.019,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  screenSize.height * 0.0125,
-                                              child: const Divider(
-                                                color: Colors.grey,
-                                                thickness: 0.5,
-                                              )),
-                                          Text(
-                                            "6. All saved images can be accessed from following directory:-",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                                left: screenSize.width * 0.0277,
-                                                top: screenSize.height *
-                                                    0.00625),
-                                            child: Text(
-                                              "6.1. With Folder Name: \n /storage/emulated/0/Pictures/FOLDERNAME",
-                                              style: TextStyle(
-                                                  fontFamily: "Montserrat",
-                                                  fontSize:
-                                                      screenSize.height * 0.019,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                                left: screenSize.width * 0.0277,
-                                                top: screenSize.height *
-                                                    0.00625),
-                                            child: Text(
-                                              "6.2. Without Folde Name: \n /storage/emulated/0/Pictures",
-                                              style: TextStyle(
-                                                  fontFamily: "Montserrat",
-                                                  fontSize:
-                                                      screenSize.height * 0.019,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  screenSize.height * 0.0125,
-                                              child: const Divider(
-                                                color: Colors.grey,
-                                                thickness: 0.5,
-                                              )),
-                                          Text(
-                                            "7. Reviews and Feedbacks are welcome at \nmycamfeedback@gmail.com",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize:
-                                                    screenSize.height * 0.019,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  screenSize.height * 0.0375,
-                                              child: const Divider(
-                                                color: Colors.grey,
-                                                thickness: 0.5,
-                                              )),
-                                          const Text(
-                                            "Thank you for using MyCam.",
-                                            style: TextStyle(
-                                                fontFamily: "Montserrat",
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  screenSize.height * 0.0125,
-                                              child: const Divider(
-                                                color: Colors.grey,
-                                                thickness: 0.5,
-                                              )),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  actions: [
-                                    Ink(
-                                      decoration: const ShapeDecoration(
-                                          shape: CircleBorder(
-                                              side: BorderSide(
-                                                  color: Color(0xFF4C4F5E)))),
-                                      child: IconButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          icon: const Icon(Icons.close)),
-                                    ),
-                                  ],
-                                );
-                              });
-                        },
-                      ),
-                    ])),
+                    )
+                  : SpeedDialChild(),
+            ],
+          )),
       backgroundColor: Colors.blueGrey,
       body: Stack(children: [
         Center(
@@ -1103,7 +688,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                           decoration:
                                               _txtVehicleNumber.text.isNotEmpty
                                                   ? BoxDecoration(
-                                                      color: Colors.white,
+                                                      color: plateColor,
                                                       border: Border.all(
                                                           color: Colors.black))
                                                   : BoxDecoration(),
@@ -1112,7 +697,15 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                             style: TextStyle(
                                                 fontFamily: selectedFont,
                                                 fontSize: size,
-                                                color: Colors.black,
+                                                color: plateColor ==
+                                                            Colors.white ||
+                                                        plateColor ==
+                                                            Colors.yellow ||
+                                                        plateColor ==
+                                                            const Color(
+                                                                0xffffeb3b)
+                                                    ? Colors.black
+                                                    : Colors.white,
                                                 fontWeight: FontWeight.w400),
                                           ),
                                         )
@@ -1148,6 +741,12 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
     String colorHex = currentColor.value.toRadixString(16).padLeft(8, '0');
     var prefs = await SharedPreferences.getInstance();
     prefs.setString("color", colorHex);
+  }
+
+  savePlateColor() async {
+    String colorHex = plateColor.value.toRadixString(16).padLeft(8, '0');
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString("plate_color", colorHex);
   }
 
   savePickedColor() async {
@@ -1460,7 +1059,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                   padding: EdgeInsets.only(
                       left: screenSize.width * 0.0416,
                       right: screenSize.width * 0.0277,
-                      top: screenSize.height * 0.0195),
+                      top: screenSize.height * 0.015),
                   child: TextField(
                     maxLines: 1,
                     minLines: 1,
@@ -1484,7 +1083,6 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                           setState(() {
                             isfolder = value!;
                           });
-
                           var prefs = await SharedPreferences.getInstance();
                           prefs.setBool("folder", isfolder!);
                         },
@@ -1493,7 +1091,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                         fontFamily: 'Montserrat',
                         color: Colors.white,
                       ),
-                      labelText: "Folder Name",
+                      labelText: "Vehicle Number",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -1511,9 +1109,116 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                   ),
                 ),
               ),
+              SizedBox(
+                height: screenSize.height * 0.01,
+              ),
+              isPlate == true
+                  ? Padding(
+                      padding: EdgeInsets.only(
+                        left: screenSize.width * 0.0416,
+                        right: screenSize.width * 0.0277,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white),
+                            borderRadius: BorderRadius.circular(6)),
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                              left: screenSize.width * 0.025,
+                              right: screenSize.width * 0.0277,
+                              top: screenSize.height * 0.01,
+                              bottom: screenSize.height * 0.01),
+                          child: Row(
+                            children: [
+                              Text(
+                                "Plate :",
+                                style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: screenSize.height * 0.023,
+                                    color: Colors.white),
+                              ),
+                              SizedBox(
+                                width: screenSize.height * 0.01,
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  setState(() {
+                                    plateColor = Colors.white;
+                                  });
+                                  await savePlateColor();
+                                },
+                                child: Container(
+                                    height: screenSize.height * 0.035,
+                                    width: screenSize.width * 0.077,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        border:
+                                            Border.all(color: Colors.white)),
+                                    child: plateColor == Colors.white
+                                        ? const Icon(Icons.check,
+                                            color: Colors.black)
+                                        : Container()),
+                              ),
+                              SizedBox(
+                                width: screenSize.height * 0.012,
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  setState(() {
+                                    plateColor = Colors.green;
+                                  });
+                                  await savePlateColor();
+                                },
+                                child: Container(
+                                    height: screenSize.height * 0.035,
+                                    width: screenSize.width * 0.077,
+                                    decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        shape: BoxShape.circle,
+                                        border:
+                                            Border.all(color: Colors.white)),
+                                    child: plateColor == Colors.green ||
+                                            plateColor ==
+                                                const Color(0xff4caf50)
+                                        ? const Icon(Icons.check,
+                                            color: Colors.white)
+                                        : Container()),
+                              ),
+                              SizedBox(
+                                width: screenSize.height * 0.012,
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  setState(() {
+                                    plateColor = Colors.yellow;
+                                  });
+                                  await savePlateColor();
+                                },
+                                child: Container(
+                                    height: screenSize.height * 0.035,
+                                    width: screenSize.width * 0.077,
+                                    decoration: BoxDecoration(
+                                        color: Colors.yellow,
+                                        shape: BoxShape.circle,
+                                        border:
+                                            Border.all(color: Colors.white)),
+                                    child: plateColor == Colors.yellow ||
+                                            plateColor ==
+                                                const Color(0xffffeb3b)
+                                        ? const Icon(Icons.check,
+                                            color: Colors.black)
+                                        : Container()),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(),
               Padding(
                 padding: EdgeInsets.only(
-                    top: screenSize.height * 0.023,
+                    top: screenSize.height * 0.01,
                     left: screenSize.width * 0.04166),
                 child: SizedBox(
                     width: screenSize.width * 0.5416,
@@ -1938,12 +1643,13 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
     var getResolution = prefs.getString("resolution");
     var getColor = prefs.getString("color");
     var getPicColor = prefs.getString("pickcolor");
+    var getPlateColor = prefs.getString("plate_color");
     var getSeparate = prefs.getBool('separate');
     var getLocation = prefs.getBool('location');
     var getDate = prefs.getBool('date');
     var getname = prefs.getBool('name');
     var getfont = prefs.getString('font');
-    var getBack = prefs.getBool('background');
+    var getBack = prefs.getBool('plate');
     double getSize = prefs.getDouble('fontSize') ?? 12.0;
 
     String? getText = prefs.getString("text") ?? "";
@@ -1951,7 +1657,6 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
     setState(() {
       isChecked = getResize ?? true;
       isfolder = getFolder ?? true;
-      isPlate = getBack ?? false;
       selectedResolution = getResolution ?? "800*600";
       selectedFont = getfont ?? "Default";
       size = getSize;
@@ -1974,10 +1679,21 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
           pickerColor = Colors.purple;
         });
       }
+      if (getPlateColor != null) {
+        setState(() {
+          plateColor = Color(int.parse(getPlateColor, radix: 16));
+        });
+      } else {
+        setState(() {
+          plateColor = Colors.white;
+        });
+      }
       isSeparate = getSeparate ?? false;
       isLocation = getLocation ?? false;
       isDate = getDate ?? true;
       isName = getname ?? false;
+      isPlate = getBack ?? false;
+
       if (isName == true) {
         _txtVehicleNumber.text = getText;
       }
@@ -2172,7 +1888,7 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
                       contentPadding: EdgeInsets.symmetric(
                           horizontal: screenSize.width * 0.01),
                       title: Text(
-                        "Folder Name Background",
+                        "Vehicle Number Plate",
                         style: TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: screenSize.height * 0.01875,
@@ -2184,9 +1900,8 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
                         setState(() {
                           checkBoxStatus['isPlate'] = value!;
                         });
-
                         // widget.onCheckboxChanged({'isDate': value!});
-                        widget.onCheckbox5Changed(value!);
+                        widget.onCheckbox4Changed(value!);
                       },
                     ),
                     SizedBox(
@@ -2203,7 +1918,7 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                       title: Text(
-                        "Save Folder Name",
+                        "Save Vehicle Number",
                         style: TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: screenSize.height * 0.01875,
@@ -2215,7 +1930,7 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
                         setState(() {
                           checkBoxStatus['isName'] = value!;
                         });
-                        widget.onCheckbox4Changed(value!);
+                        widget.onCheckbox5Changed(value!);
                       },
                     ),
                     SizedBox(
@@ -2224,6 +1939,7 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
                           color: Colors.grey,
                           thickness: 0.5,
                         )),
+
                     ExpansionTile(
                       tilePadding: EdgeInsets.symmetric(
                           horizontal: screenSize.width * 0.01),
