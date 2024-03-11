@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:survey_cam/authentication/utils/check_login.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -9,10 +10,23 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    CheckLoginLogic.checkLogin(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
-        child: CircularProgressIndicator(), // or any other loading indicator
+        child: Text(
+          "Welcome to SurveyCam",
+          style: TextStyle(
+              fontFamily: "Montserrat",
+              fontSize: 59,
+              fontWeight: FontWeight.w500),
+        ), // or any other loading indicator
       ),
     );
   }

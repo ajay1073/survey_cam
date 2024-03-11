@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:survey_cam/authentication/login.dart';
+import 'package:survey_cam/splash.dart';
 
 import 'firebase_options.dart';
 
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(primarySwatch: Colors.blue),
         // home: CaptureAndStampImage());
         // home: SignUpPage());
-        home: LoginScreen());
+        home: SplashScreen());
     // home: CodeGeneratorScreen());
     // yeh vala
     // home: CameraApp()

@@ -10,6 +10,7 @@ class UserModel {
   bool isAdmin;
   bool isActive;
   Timestamp lastUsed;
+  Timestamp signUp;
 
   UserModel({
     required this.userName,
@@ -19,6 +20,7 @@ class UserModel {
     required this.isAdmin,
     required this.isActive,
     required this.lastUsed,
+    required this.signUp,
   });
   Map<String, dynamic> toMap() {
     return {
@@ -28,7 +30,8 @@ class UserModel {
       'device_id': deviceID,
       'is_admin': isAdmin,
       'is_active': isActive,
-      'last_used': lastUsed
+      'last_used': lastUsed,
+      "sign_up": signUp
     };
   }
 
@@ -41,7 +44,8 @@ class UserModel {
         deviceID: map['device_id'],
         isAdmin: map['is_admin'],
         isActive: map['is_active'],
-        lastUsed: map['last_used']);
+        lastUsed: map['last_used'],
+        signUp: map['sign-up']);
   }
 
   String toJson() => json.encode(toMap());
