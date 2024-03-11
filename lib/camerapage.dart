@@ -59,7 +59,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
   Future<void> _captureImage() async {
     _saveImage();
     // getLocation();
-    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     setState(() {
       // _reimage = _resizeImage(image);
       _image = image;
@@ -551,7 +551,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                         thickness: 0.5,
                                       )),
                                   Text(
-                                    "7. Reviews and Feedbacks are welcome at \nmycamfeedback@gmail.com",
+                                    "7. Reviews and Feedbacks are welcome at \nsurveycamfeedback@gmail.com",
                                     style: TextStyle(
                                         fontFamily: "Montserrat",
                                         fontSize: screenSize.height * 0.019,
@@ -563,12 +563,25 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                         color: Colors.grey,
                                         thickness: 0.5,
                                       )),
-                                  const Text(
-                                    "Thank you for using MyCam.",
-                                    style: TextStyle(
-                                        fontFamily: "Montserrat",
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w500),
+                                  RichText(
+                                    text: const TextSpan(
+                                      text: 'Thank you for using SurveyCam   ',
+                                      style: TextStyle(
+                                          fontFamily: "Montserrat",
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black),
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text: '(Version:1.0.0)',
+                                          style: TextStyle(
+                                              fontFamily: "Montserrat",
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                   SizedBox(
                                       height: screenSize.height * 0.0125,
@@ -666,6 +679,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                 right: screenSize.width * 0.055,
                                 child: Text(
                                   formatgps(),
+                                  // "Latitude°N : Logitute°W",
                                   style: TextStyle(
                                       fontFamily: selectedFont,
                                       fontSize: size,

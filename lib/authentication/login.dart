@@ -194,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
         .instance
         .collection("users")
         .where("phone", isEqualTo: devicePhone)
-        .where("device_id", isEqualTo: deviceId)
+        .where("device_id", arrayContains: deviceId)
         .get();
 
     if (snapshot.docs.isNotEmpty) {
@@ -242,8 +242,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (querySnapshot.docs.isNotEmpty) {
       print("Admin");
-      // User already exists, display a message
-
       return true;
     } else {
       print("NotAdmin");
@@ -579,16 +577,19 @@ class _LoginScreenState extends State<LoginScreen> {
       print(deviceId);
       isAdmin = await checkadmin(
           '+${selectedCountry.phoneCode}${phoneController.text}');
+      print(isAdmin);
       if (isAdmin == true) {
         role = "Admin";
       } else {
         role = "User";
       }
+      print("hh");
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: '+${selectedCountry.phoneCode}${phoneController.text}',
         verificationCompleted: (PhoneAuthCredential credential) {},
         verificationFailed: (FirebaseAuthException e) {},
         codeSent: (String verificationId, int? resendToken) {
+          print("1");
           // SignUpPage.verify = verificationId;
           Navigator.push(
               context,
@@ -603,6 +604,7 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         codeAutoRetrievalTimeout: (String verificationId) {},
       );
+      print("firebase auth 2");
 
       // User not found, proceed with the sign-up process
 
@@ -610,6 +612,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Navigate to OTPPage with user information
     } catch (e) {
+      print("firebase auth error");
       print('Error checking account: $e');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('An error occurred. Please try again later.'),

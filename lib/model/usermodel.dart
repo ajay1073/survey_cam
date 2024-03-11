@@ -6,10 +6,11 @@ class UserModel {
   String userPhone;
   String userName;
   String userID;
-  String deviceID;
+  List<String> deviceID;
   bool isAdmin;
   bool isActive;
   Timestamp lastUsed;
+  Timestamp signUp;
 
   UserModel({
     required this.userName,
@@ -19,6 +20,7 @@ class UserModel {
     required this.isAdmin,
     required this.isActive,
     required this.lastUsed,
+    required this.signUp,
   });
   Map<String, dynamic> toMap() {
     return {
@@ -28,20 +30,30 @@ class UserModel {
       'device_id': deviceID,
       'is_admin': isAdmin,
       'is_active': isActive,
-      'last_used': lastUsed
+      'last_used': lastUsed,
+      'sign_up': signUp
     };
   }
 
   factory UserModel.fromfirestore(DocumentSnapshot user) {
     dynamic map = user.data();
+    print("Dataaaaa");
+    print(map.toString());
+    List allDeviceId = map['device_id'];
+    List<String> temp = allDeviceId.map(
+      (e) {
+        return e.toString();
+      },
+    ).toList();
     return UserModel(
         userName: map['name'],
         userPhone: map['phone'],
         userID: map['user_id'],
-        deviceID: map['device_id'],
+        deviceID: temp,
         isAdmin: map['is_admin'],
         isActive: map['is_active'],
-        lastUsed: map['last_used']);
+        lastUsed: map['last_used'],
+        signUp: map['sign_up']);
   }
 
   String toJson() => json.encode(toMap());

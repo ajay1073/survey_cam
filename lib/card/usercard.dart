@@ -97,7 +97,27 @@ class UserCard extends StatelessWidget {
                         right: screenSize.width * 0.028,
                       ),
                       child: Text(
-                        "Device: ${model.deviceID}",
+                        "Device: ${model.deviceID.toString()}",
+                        style: TextStyle(
+                            fontFamily: "Montserrat",
+                            fontSize: screenSize.height * 0.025,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    Divider(
+                      color:
+                          model.isActive == true ? Colors.yellow : Colors.white,
+                      endIndent: 10,
+                      indent: 10,
+                      thickness: 1,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: screenSize.width * 0.028,
+                        right: screenSize.width * 0.028,
+                      ),
+                      child: Text(
+                        "Sign-Up Date: ${model.signUp.toDate().day.toString().padLeft(2, '0')}/${model.signUp.toDate().month.toString().padLeft(2, '0')}/${model.signUp.toDate().year.toString()} ${model.signUp.toDate().hour.toString().padLeft(2, '0')}:${model.signUp.toDate().minute.toString().padLeft(2, '0')}:${model.signUp.toDate().second.toString().padLeft(2, '0')}",
                         style: TextStyle(
                             fontFamily: "Montserrat",
                             fontSize: screenSize.height * 0.025,

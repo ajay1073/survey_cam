@@ -45,7 +45,7 @@ class _UserAddPageState extends State<UserAddPage> {
     if (widget.model != null) {
       userNameController.text = widget.model!.userName;
       userMobileController.text = widget.model!.userPhone;
-      deviceIdController.text = widget.model!.deviceID;
+      deviceIdController.text = widget.model!.deviceID.toString();
       isActive = widget.model!.isActive;
       isAdmin = widget.model!.isAdmin;
     } else {

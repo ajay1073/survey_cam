@@ -181,10 +181,11 @@ class _OTPPageState extends State<OTPPage> {
                                   "name": widget.name,
                                   "phone": widget.phoneNumber,
                                   "user_id": userId,
-                                  "device_id": widget.deviceID,
+                                  "device_id": [widget.deviceID],
                                   "is_active": isActive,
                                   "is_admin": isAdmin,
-                                  "last_used": DateTime.now()
+                                  "last_used": DateTime.now(),
+                                  "sign_up": DateTime.now()
                                 }).then((value) => {
                                           prefs.setBool("isLoggedIn", true),
                                           ScaffoldMessenger.of(context)
@@ -213,7 +214,6 @@ class _OTPPageState extends State<OTPPage> {
                                       userDocument = snapshot.docs.first;
                                   String userId = userDocument.id;
                                   print('User ID: $userId');
-
                                   prefs.setBool("isLoggedIn", true);
                                   FirebaseFirestore.instance
                                       .collection("users")
