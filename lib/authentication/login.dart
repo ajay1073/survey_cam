@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // TODO: implement initState
     super.initState();
     getValue();
-    checkLogin();
+    // checkLogin();
     code = genrateCode(randomNumber, 2.5);
     print(genrateCode(randomNumber, 2.5));
   }
@@ -100,90 +100,90 @@ class _LoginScreenState extends State<LoginScreen> {
     return deviceId;
   }
 
-  void checkLogin() async {
-    var prefs = await SharedPreferences.getInstance();
-    String? storedPhone = prefs.getString("phone");
-    var isLogin = prefs.getBool('isLoggedIn');
-    print(isLogin);
+  // void checkLogin() async {
+  //   var prefs = await SharedPreferences.getInstance();
+  //   String? storedPhone = prefs.getString("phone");
+  //   var isLogin = prefs.getBool('isLoggedIn');
+  //   print(isLogin);
 
-    if (isLogin == true) {
-      // User is logged in, get the stored name
-      if (storedPhone != null) {
-        // Check in Firestore if the storedName has isActive value as true
-        isActive = await checkActive(storedPhone);
-        if (isActive == true) {
-          // If there is a user with the provided isActive is true, navigate to the next screen
-          String? deviceId = await getDeviceId();
-          print(deviceId);
-          deviceSame = await checkDevice(storedPhone);
+  //   if (isLogin == true) {
+  //     // User is logged in, get the stored name
+  //     if (storedPhone != null) {
+  //       // Check in Firestore if the storedName has isActive value as true
+  //       isActive = await checkActive(storedPhone);
+  //       if (isActive == true) {
+  //         // If there is a user with the provided isActive is true, navigate to the next screen
+  //         String? deviceId = await getDeviceId();
+  //         print(deviceId);
+  //         deviceSame = await checkDevice(storedPhone);
 
-          if (deviceSame == true) {
-            isAdmin = await checkadmin(storedPhone);
-            if (isAdmin == true) {
-              role = "Admin";
-            } else {
-              role = "User";
-            }
-            QuerySnapshot<Map<String, dynamic>> snapshot =
-                await FirebaseFirestore.instance
-                    .collection("users")
-                    .where("phone", isEqualTo: storedPhone)
-                    .get();
+  //         if (deviceSame == true) {
+  //           isAdmin = await checkadmin(storedPhone);
+  //           if (isAdmin == true) {
+  //             role = "Admin";
+  //           } else {
+  //             role = "User";
+  //           }
+  //           QuerySnapshot<Map<String, dynamic>> snapshot =
+  //               await FirebaseFirestore.instance
+  //                   .collection("users")
+  //                   .where("phone", isEqualTo: storedPhone)
+  //                   .get();
 
-            if (snapshot.docs.isNotEmpty) {
-              // Assuming phone numbers are unique, so there should be at most one document
-              DocumentSnapshot<Map<String, dynamic>> userDocument =
-                  snapshot.docs.first;
-              String userId = userDocument.id;
-              print('User ID: $userId');
+  //           if (snapshot.docs.isNotEmpty) {
+  //             // Assuming phone numbers are unique, so there should be at most one document
+  //             DocumentSnapshot<Map<String, dynamic>> userDocument =
+  //                 snapshot.docs.first;
+  //             String userId = userDocument.id;
+  //             print('User ID: $userId');
 
-              prefs.setBool("isLoggedIn", true);
-              FirebaseFirestore.instance
-                  .collection("users")
-                  .doc(userId)
-                  .update({
-                "last_used": DateTime.now(),
-              }).then((value) => {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Welcome Back!"))),
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => CaptureAndStampImage(
-                                    role: role,
-                                  )),
-                        ),
-                      });
-            }
-          } else {
-            showDialog(
-                context: context,
-                builder: (BuildContext) {
-                  return RequestPage(
-                      phoneNumber: storedPhone,
-                      message:
-                          "It's seems like this account is registered  on another device. If you want to authorize this device with your account send us your query with selected problem given in drop down menu below.");
-                });
-            // Handle the case when the user is not found or isActive is not true
-            // You can show a message or take appropriate action
-            print("User device ID is not same");
-          }
-        } else {
-          showDialog(
-              context: context,
-              builder: (BuildContext) {
-                return RequestPage(
-                    phoneNumber: storedPhone,
-                    message:
-                        "It's seems like you are not an active member, if it's a mistake, send us your query with selected problem given in drop down menu below.");
-              });
-          // Handle the case when the user is not found or isActive is not true
-          // You can show a message or take appropriate action
-          print("User not active, ");
-        }
-      }
-    }
-  }
+  //             prefs.setBool("isLoggedIn", true);
+  //             FirebaseFirestore.instance
+  //                 .collection("users")
+  //                 .doc(userId)
+  //                 .update({
+  //               "last_used": DateTime.now(),
+  //             }).then((value) => {
+  //                       ScaffoldMessenger.of(context).showSnackBar(
+  //                           const SnackBar(content: Text("Welcome Back!"))),
+  //                       Navigator.pushReplacement(
+  //                         context,
+  //                         MaterialPageRoute(
+  //                             builder: (context) => CaptureAndStampImage(
+  //                                   role: role,
+  //                                 )),
+  //                       ),
+  //                     });
+  //           }
+  //         } else {
+  //           showDialog(
+  //               context: context,
+  //               builder: (BuildContext) {
+  //                 return RequestPage(
+  //                     phoneNumber: storedPhone,
+  //                     message:
+  //                         "It's seems like this account is registered  on another device. If you want to authorize this device with your account send us your query with selected problem given in drop down menu below.");
+  //               });
+  //           // Handle the case when the user is not found or isActive is not true
+  //           // You can show a message or take appropriate action
+  //           print("User device ID is not same");
+  //         }
+  //       } else {
+  //         showDialog(
+  //             context: context,
+  //             builder: (BuildContext) {
+  //               return RequestPage(
+  //                   phoneNumber: storedPhone,
+  //                   message:
+  //                       "It's seems like you are not an active member, if it's a mistake, send us your query with selected problem given in drop down menu below.");
+  //             });
+  //         // Handle the case when the user is not found or isActive is not true
+  //         // You can show a message or take appropriate action
+  //         print("User not active, ");
+  //       }
+  //     }
+  //   }
+  // }
 
   Future<bool> checkDevice(String? storedphone) async {
     String? deviceId = await getDeviceId();

@@ -93,6 +93,10 @@ class CheckLoginLogic {
                       });
             }
           } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
             showDialog(
                 context: context,
                 builder: (BuildContext) {
@@ -106,6 +110,10 @@ class CheckLoginLogic {
             print("User device ID is not same");
           }
         } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+          );
           showDialog(
               context: context,
               builder: (BuildContext) {
@@ -136,7 +144,7 @@ class CheckLoginLogic {
         .instance
         .collection("users")
         .where("phone", isEqualTo: devicePhone)
-        .where("device_id", arrayContains: deviceId)
+        .where("device_id", isEqualTo: deviceId)
         .get();
 
     if (snapshot.docs.isNotEmpty) {

@@ -321,7 +321,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                               isPlate = value;
                             });
                             var prefs = await SharedPreferences.getInstance();
-                            prefs.setBool('plate', isPlate!);
+                            prefs.setBool(' plate', isPlate!);
                           },
                           onCheckbox5Changed: (value) async {
                             setState(() {

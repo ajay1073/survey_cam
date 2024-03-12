@@ -184,7 +184,8 @@ class _OTPPageState extends State<OTPPage> {
                                   "device_id": widget.deviceID,
                                   "is_active": isActive,
                                   "is_admin": isAdmin,
-                                  "last_used": DateTime.now()
+                                  "last_used": DateTime.now(),
+                                  "sign_up": DateTime.now()
                                 }).then((value) => {
                                           prefs.setBool("isLoggedIn", true),
                                           ScaffoldMessenger.of(context)
