@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:survey_cam/authentication/utils/check_login.dart';
 import 'package:survey_cam/camerapage.dart';
+import 'package:survey_cam/model/usermodel.dart';
 import 'package:uuid/uuid.dart';
 
 class OTPPage extends StatefulWidget {
@@ -12,7 +13,6 @@ class OTPPage extends StatefulWidget {
   final String verificationID;
   final String deviceID;
   final String name;
-  final String role;
   // final Function()? onVerificationSuccess;
   const OTPPage({
     Key? key,
@@ -20,7 +20,6 @@ class OTPPage extends StatefulWidget {
     required this.verificationID,
     required this.deviceID,
     this.name = '',
-    this.role = '',
     // this.onVerificationSuccess
   }) : super(key: key);
 
@@ -36,16 +35,6 @@ class _OTPPageState extends State<OTPPage> {
   var code = '';
   bool isAdmin = false;
   bool isActive = true;
-
-  Future<bool> checkInternetConnectivity() async {
-    try {
-      final response = await http.get(Uri.parse('https://www.google.com'));
-      return response.statusCode == 200;
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +133,8 @@ class _OTPPageState extends State<OTPPage> {
                     ElevatedButton(
                       onPressed: () async {
                         var prefs = await SharedPreferences.getInstance();
-                        bool isConnected = await checkInternetConnectivity();
+                        bool isConnected =
+                            await CheckLoginLogic.checkInternetConnectivity();
                         if (isConnected == false) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -196,7 +186,19 @@ class _OTPPageState extends State<OTPPage> {
                                             MaterialPageRoute(
                                                 builder: (context) =>
                                                     CaptureAndStampImage(
-                                                      role: "User",
+                                                      user: UserModel(
+                                                          userName: widget.name,
+                                                          userPhone: widget
+                                                              .phoneNumber,
+                                                          userID: userId,
+                                                          deviceID:
+                                                              widget.deviceID,
+                                                          isAdmin: isAdmin,
+                                                          isActive: isActive,
+                                                          lastUsed:
+                                                              Timestamp.now(),
+                                                          signUp:
+                                                              Timestamp.now()),
                                                     )),
                                           ),
                                         });
@@ -226,14 +228,14 @@ class _OTPPageState extends State<OTPPage> {
                                                 .showSnackBar(const SnackBar(
                                                     content:
                                                         Text("User Verified"))),
-                                            Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      CaptureAndStampImage(
-                                                        role: widget.role,
-                                                      )),
-                                            ),
+                                            //   Navigator.pushReplacement(
+                                            //   context,
+                                            //   MaterialPageRoute(
+                                            //       builder: (context) =>
+                                            //           CaptureAndStampImage(
+                                            //           user: UserModel(userName: userName, userPhone: userPhone, userID: userID, deviceID: deviceID, isAdmin: isAdmin, isActive: isActive, lastUsed: lastUsed, signUp: signUp),
+                                            //           )),
+                                            // ),
                                           });
                                 }
                               }
@@ -293,3 +295,7 @@ class _OTPPageState extends State<OTPPage> {
     );
   }
 }
+
+// class Userr {
+//   final String name;
+// }

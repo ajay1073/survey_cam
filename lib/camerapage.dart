@@ -1,8 +1,12 @@
+import 'package:exif/exif.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:location/location.dart' as loc;
+import 'package:survey_cam/authentication/utils/check_login.dart';
 import 'package:survey_cam/codegenerator.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -18,9 +22,11 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'model/usermodel.dart';
+
 class CaptureAndStampImage extends StatefulWidget {
-  final String role;
-  CaptureAndStampImage({required this.role});
+  final UserModel user;
+  CaptureAndStampImage({required this.user});
   @override
   _CaptureAndStampImageState createState() => _CaptureAndStampImageState();
 }
@@ -30,11 +36,11 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
   double size = 12;
   String selectedResolution = "800*600";
   String selectedFont = "Default";
-  loc.Location location = loc.Location();
   loc.LocationData? currentLocation;
   final GlobalKey key = GlobalKey();
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
+  late String plateName = "Non Transport";
   late Color plateColor = Colors.white;
   late Color currentColor = Colors.orange;
   late Color pickerColor = Colors.purple;
@@ -53,13 +59,14 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
   bool? isDate = true; // for not having date time stamp
   bool? isName = false; // for saving folder value
   bool? isPlate = false;
-
+  bool? isGallery = false;
   // Future<XFile>? _reimage;
 
   Future<void> _captureImage() async {
     _saveImage();
     // getLocation();
-    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    final XFile? image = await _picker.pickImage(
+        source: isGallery == false ? ImageSource.camera : ImageSource.gallery);
     setState(() {
       // _reimage = _resizeImage(image);
       _image = image;
@@ -208,25 +215,10 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getLocation();
+    CheckLoginLogic.getLocation();
     // _saveImage();
     getValue();
-  }
-
-  Future<void> getLocation() async {
-    try {
-      currentLocation = await location.getLocation();
-    } catch (e) {
-      // Handle exceptions
-      print('Error: $e');
-    }
-
-    if (currentLocation != null) {
-      print('Latitude: ${currentLocation?.latitude}');
-      print('Longitude: ${currentLocation?.longitude}');
-    } else {
-      print('Unable to get location');
-    }
+    currentLocation = CheckLoginLogic.currentLocation;
   }
 
   @override
@@ -321,7 +313,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                               isPlate = value;
                             });
                             var prefs = await SharedPreferences.getInstance();
-                            prefs.setBool(' plate', isPlate!);
+                            prefs.setBool('plate', isPlate!);
                           },
                           onCheckbox5Changed: (value) async {
                             setState(() {
@@ -329,6 +321,13 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                             });
                             var prefs = await SharedPreferences.getInstance();
                             prefs.setBool('name', isName!);
+                          },
+                          onCheckbox6Changed: (value) async {
+                            setState(() {
+                              isGallery = value;
+                            });
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.setBool('gallery', isGallery!);
                           },
                           onFontChanged: (value) async {
                             setState(() {
@@ -564,7 +563,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                         thickness: 0.5,
                                       )),
                                   const Text(
-                                    "Thank you for using MyCam.",
+                                    "Thank you for using SurveyCam.",
                                     style: TextStyle(
                                         fontFamily: "Montserrat",
                                         fontSize: 20,
@@ -597,7 +596,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                       });
                 },
               ),
-              widget.role == "Admin"
+              widget.user.isAdmin
                   ? SpeedDialChild(
                       shape: const CircleBorder(),
                       child: const Icon(Icons.lock_person),
@@ -679,7 +678,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                 alignment: Alignment.centerLeft,
                                 child: Padding(
                                   padding: EdgeInsets.only(
-                                      bottom: screenSize.height * 0.020,
+                                      bottom: screenSize.height * 0.0185,
                                       left: screenSize.width * 0.055),
                                   child: isPlate == true
                                       ? Container(
@@ -697,15 +696,47 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                             style: TextStyle(
                                                 fontFamily: selectedFont,
                                                 fontSize: size,
-                                                color: plateColor ==
-                                                            Colors.white ||
-                                                        plateColor ==
-                                                            Colors.yellow ||
-                                                        plateColor ==
-                                                            const Color(
-                                                                0xffffeb3b)
+                                                color: plateColor == Colors.white &&
+                                                        plateName ==
+                                                            "Non Transport"
                                                     ? Colors.black
-                                                    : Colors.white,
+                                                    : plateColor == Colors.yellow &&
+                                                                plateName ==
+                                                                    "Transport" ||
+                                                            plateColor ==
+                                                                    const Color(
+                                                                        0xffffeb3b) &&
+                                                                plateName ==
+                                                                    "Transport"
+                                                        ? Colors.black
+                                                        : plateColor == Colors.yellow &&
+                                                                    plateName ==
+                                                                        "Temporary" ||
+                                                                plateColor ==
+                                                                        const Color(
+                                                                            0xffffeb3b) &&
+                                                                    plateName ==
+                                                                        "Temporary"
+                                                            ? Colors.red
+                                                            : plateColor == Colors.red &&
+                                                                        plateName ==
+                                                                            "Trade" ||
+                                                                    plateColor == Color(0xfff44336) &&
+                                                                        plateName ==
+                                                                            "Trade"
+                                                                ? Colors.white
+                                                                : plateColor == Colors.black &&
+                                                                        plateName == "Rental"
+                                                                    ? Colors.yellow
+                                                                    : plateColor == Colors.green && plateName == "Electric" || plateColor == Color(0xff4caf50) && plateName == "Electric"
+                                                                        ? Colors.white
+                                                                        : plateColor == Colors.green && plateName == "Electric Transport" || plateColor == Color(0xff4caf50) && plateName == "Electric Transport"
+                                                                            ? Colors.yellow
+                                                                            : plateColor == Colors.blue && plateName == "Diplomat" || plateColor == Color(0xff2196f3) && plateName == "Diplomat"
+                                                                                ? Colors.white
+                                                                                : plateColor == Colors.grey.shade600 && plateName == "Defence" || plateColor == Color(0xff757575) && plateName == "Defence"
+                                                                                    ? Colors.white
+                                                                                    : Colors.black,
                                                 fontWeight: FontWeight.w400),
                                           ),
                                         )
@@ -739,14 +770,17 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
 
   saveColor() async {
     String colorHex = currentColor.value.toRadixString(16).padLeft(8, '0');
+
     var prefs = await SharedPreferences.getInstance();
     prefs.setString("color", colorHex);
   }
 
   savePlateColor() async {
     String colorHex = plateColor.value.toRadixString(16).padLeft(8, '0');
+    print(colorHex);
     var prefs = await SharedPreferences.getInstance();
     prefs.setString("plate_color", colorHex);
+    prefs.setString("plate_name", plateName);
   }
 
   savePickedColor() async {
@@ -1119,6 +1153,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                         right: screenSize.width * 0.0277,
                       ),
                       child: Container(
+                        width: screenSize.width * 0.535,
                         decoration: BoxDecoration(
                             border: Border.all(color: Colors.white),
                             borderRadius: BorderRadius.circular(6)),
@@ -1129,21 +1164,89 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                               top: screenSize.height * 0.01,
                               bottom: screenSize.height * 0.01),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "Plate :",
-                                style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: screenSize.height * 0.023,
-                                    color: Colors.white),
-                              ),
-                              SizedBox(
-                                width: screenSize.height * 0.01,
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return PlateColor(
+                                            color: plateColor,
+                                            name: plateName,
+                                            onChanged: (color, name) async {
+                                              setState(() {
+                                                plateColor = color;
+                                                plateName = name;
+                                              });
+                                              print("hello");
+                                              await savePlateColor();
+                                              print("hellow");
+                                            });
+                                      });
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      color: plateColor,
+                                      border: Border.all(color: Colors.white)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 3),
+                                    child: Text(
+                                      "Plate :",
+                                      style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: screenSize.height * 0.023,
+                                        color: plateColor == Colors.white &&
+                                                plateName == "Non Transport"
+                                            ? Colors.black
+                                            : plateColor == Colors.yellow &&
+                                                        plateName ==
+                                                            "Transport" ||
+                                                    plateColor == const Color(0xffffeb3b) &&
+                                                        plateName == "Transport"
+                                                ? Colors.black
+                                                : plateColor == Colors.yellow &&
+                                                            plateName ==
+                                                                "Temporary" ||
+                                                        plateColor == const Color(0xffffeb3b) &&
+                                                            plateName ==
+                                                                "Temporary"
+                                                    ? Colors.red
+                                                    : plateColor == Colors.red &&
+                                                                plateName ==
+                                                                    "Trade" ||
+                                                            plateColor == Color(0xfff44336) &&
+                                                                plateName ==
+                                                                    "Trade"
+                                                        ? Colors.white
+                                                        : plateColor == const Color.fromRGBO(0, 0, 0, 1) &&
+                                                                plateName ==
+                                                                    "Rental"
+                                                            ? Colors.yellow
+                                                            : plateColor == Colors.green &&
+                                                                        plateName ==
+                                                                            "Electric" ||
+                                                                    plateColor == Color(0xff4caf50) &&
+                                                                        plateName == "Electric"
+                                                                ? Colors.white
+                                                                : plateColor == Colors.green && plateName == "Electric Transport" || plateColor == Color(0xff4caf50) && plateName == "Electric Transport"
+                                                                    ? Colors.yellow
+                                                                    : plateColor == Colors.blue || plateColor == Color(0xff2196f3) && plateName == "Diplomat"
+                                                                        ? Colors.white
+                                                                        : plateColor == Colors.grey.shade600 || plateColor == Color(0xff757575) && plateName == "Defence"
+                                                                            ? Colors.white
+                                                                            : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                               GestureDetector(
                                 onTap: () async {
                                   setState(() {
                                     plateColor = Colors.white;
+                                    plateName = "Non Transport";
                                   });
                                   await savePlateColor();
                                 },
@@ -1155,18 +1258,17 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                         shape: BoxShape.circle,
                                         border:
                                             Border.all(color: Colors.white)),
-                                    child: plateColor == Colors.white
+                                    child: plateColor == Colors.white &&
+                                            plateName == "Non Transport"
                                         ? const Icon(Icons.check,
                                             color: Colors.black)
                                         : Container()),
-                              ),
-                              SizedBox(
-                                width: screenSize.height * 0.012,
                               ),
                               GestureDetector(
                                 onTap: () async {
                                   setState(() {
                                     plateColor = Colors.green;
+                                    plateName = "Electric";
                                   });
                                   await savePlateColor();
                                 },
@@ -1178,20 +1280,20 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                         shape: BoxShape.circle,
                                         border:
                                             Border.all(color: Colors.white)),
-                                    child: plateColor == Colors.green ||
+                                    child: plateColor == Colors.green &&
+                                                plateName == "Electric" ||
                                             plateColor ==
-                                                const Color(0xff4caf50)
+                                                    const Color(0xff4caf50) &&
+                                                plateName == "Electric"
                                         ? const Icon(Icons.check,
                                             color: Colors.white)
                                         : Container()),
-                              ),
-                              SizedBox(
-                                width: screenSize.height * 0.012,
                               ),
                               GestureDetector(
                                 onTap: () async {
                                   setState(() {
                                     plateColor = Colors.yellow;
+                                    plateName = "Transport";
                                   });
                                   await savePlateColor();
                                 },
@@ -1203,9 +1305,11 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                         shape: BoxShape.circle,
                                         border:
                                             Border.all(color: Colors.white)),
-                                    child: plateColor == Colors.yellow ||
+                                    child: plateColor == Colors.yellow &&
+                                                plateName == "Transport" ||
                                             plateColor ==
-                                                const Color(0xffffeb3b)
+                                                    const Color(0xffffeb3b) &&
+                                                plateName == "Transport"
                                         ? const Icon(Icons.check,
                                             color: Colors.black)
                                         : Container()),
@@ -1309,10 +1413,15 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                 SizedBox(
                                   height: screenSize.height * 0.0125,
                                 ),
-                                const Icon(
-                                  Icons.camera,
-                                  color: Colors.white,
-                                ),
+                                isGallery == false
+                                    ? const Icon(
+                                        Icons.camera,
+                                        color: Colors.white,
+                                      )
+                                    : const Icon(
+                                        Icons.image_search,
+                                        color: Colors.white,
+                                      ),
                                 SizedBox(
                                   height: screenSize.height * 0.01875,
                                 ),
@@ -1320,18 +1429,27 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                               ],
                             ),
                             Padding(
-                              padding: EdgeInsets.only(
-                                  left: screenSize.width * 0.02,
-                                  top: screenSize.height * 0.0125,
-                                  bottom: screenSize.height * 0.00625),
-                              child: Text('Capture\nand\nSave',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: screenSize.height * 0.0225,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white)),
-                            ),
+                                padding: EdgeInsets.only(
+                                    left: screenSize.width * 0.02,
+                                    top: screenSize.height * 0.0125,
+                                    bottom: screenSize.height * 0.00625),
+                                child: isGallery == false
+                                    ? Text('Capture\nand\nSave',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontFamily: 'Montserrat',
+                                            fontSize:
+                                                screenSize.height * 0.0225,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white))
+                                    : Text('Pick\nand\nSave',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontFamily: 'Montserrat',
+                                            fontSize:
+                                                screenSize.height * 0.0225,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white))),
                           ],
                         )),
                   ),
@@ -1361,19 +1479,29 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
                                 horizontal: screenSize.width * 0.04),
                             backgroundColor: Colors.green,
                             elevation: 5),
-                        icon: const Icon(Icons.camera, color: Colors.white),
+                        icon: isGallery == false
+                            ? const Icon(Icons.camera, color: Colors.white)
+                            : const Icon(Icons.image_search,
+                                color: Colors.white),
                         label: Padding(
-                          padding: EdgeInsets.only(
-                              top: screenSize.height * 0.00625,
-                              bottom: screenSize.height * 0.00625),
-                          child: Text('Capture\nImage',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  fontSize: screenSize.height * 0.02125,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white)),
-                        ),
+                            padding: EdgeInsets.only(
+                                top: screenSize.height * 0.00625,
+                                bottom: screenSize.height * 0.00625),
+                            child: isGallery == false
+                                ? Text('Capture\nImage',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: screenSize.height * 0.02125,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white))
+                                : Text('Pick\nImage',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: screenSize.height * 0.02125,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white))),
                       ),
                     ),
                     Padding(
@@ -1493,7 +1621,6 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
       print("resize ke pahle");
       File resizedImageFile = await _resizeImage(uint8List, originalFilePath);
       print("resize");
-
       // Save the resized image to the specific directory as JPG
       // String resizedFilePath = '$directoryPath/image.jpg';
       // await File(resizedFilePath)
@@ -1644,12 +1771,14 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
     var getColor = prefs.getString("color");
     var getPicColor = prefs.getString("pickcolor");
     var getPlateColor = prefs.getString("plate_color");
+    var getplatename = prefs.getString("plate_name");
     var getSeparate = prefs.getBool('separate');
     var getLocation = prefs.getBool('location');
     var getDate = prefs.getBool('date');
     var getname = prefs.getBool('name');
     var getfont = prefs.getString('font');
     var getBack = prefs.getBool('plate');
+    var getGallery = prefs.getBool('gallery');
     double getSize = prefs.getDouble('fontSize') ?? 12.0;
 
     String? getText = prefs.getString("text") ?? "";
@@ -1659,6 +1788,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
       isfolder = getFolder ?? true;
       selectedResolution = getResolution ?? "800*600";
       selectedFont = getfont ?? "Default";
+      plateName = getplatename ?? "Non Transport";
       size = getSize;
       if (getColor != null) {
         setState(() {
@@ -1693,6 +1823,7 @@ class _CaptureAndStampImageState extends State<CaptureAndStampImage> {
       isDate = getDate ?? true;
       isName = getname ?? false;
       isPlate = getBack ?? false;
+      isGallery = getGallery ?? false;
 
       if (isName == true) {
         _txtVehicleNumber.text = getText;
@@ -1707,6 +1838,7 @@ class CheckboxDialog extends StatefulWidget {
   final ValueChanged<bool> onCheckbox3Changed;
   final ValueChanged<bool> onCheckbox4Changed;
   final ValueChanged<bool> onCheckbox5Changed;
+  final ValueChanged<bool> onCheckbox6Changed;
   final ValueChanged<String> onFontChanged;
   final ValueChanged<double> onSizeChanged;
 
@@ -1716,6 +1848,7 @@ class CheckboxDialog extends StatefulWidget {
     required this.onCheckbox3Changed,
     required this.onCheckbox4Changed,
     required this.onCheckbox5Changed,
+    required this.onCheckbox6Changed,
     required this.onFontChanged,
     required this.onSizeChanged,
   });
@@ -1730,7 +1863,8 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
     'isLocation': false, // for having location stamp
     'isDate': true, // for not having date time stamp
     'isName': false, // for saving folder value
-    'isPlate': false
+    'isPlate': false,
+    'isGallery': false
   };
   List<String> fontFamilyList = [
     "Default",
@@ -1757,6 +1891,7 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
     var getname = prefs.getBool('name');
     var getfont = prefs.getString('font');
     var getplate = prefs.getBool('plate');
+    var getgallery = prefs.getBool('gallery');
     var getSize = prefs.getString('size') ?? "12";
     setState(() {
       checkBoxStatus['isSeparate'] = getSeparate ?? false;
@@ -1764,6 +1899,7 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
       checkBoxStatus['isDate'] = getDate ?? true;
       checkBoxStatus['isName'] = getname ?? false;
       checkBoxStatus['isPlate'] = getplate ?? false;
+      checkBoxStatus['isGallery'] = getgallery ?? false;
       selectedFont = getfont ?? 'Default';
       sizeController.text = getSize;
     });
@@ -1939,7 +2075,35 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
                           color: Colors.grey,
                           thickness: 0.5,
                         )),
-
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: screenSize.width * 0.01),
+                      activeColor: Colors.blue,
+                      title: Text(
+                        "Take Image From Gallery",
+                        style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: screenSize.height * 0.01875,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        "(When in use it is advice to check individual save image also)",
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      value: checkBoxStatus['isGallery'],
+                      onChanged: (value) async {
+                        setState(() {
+                          checkBoxStatus['isGallery'] = value!;
+                        });
+                        widget.onCheckbox6Changed(value!);
+                      },
+                    ),
+                    SizedBox(
+                        height: screenSize.height * 0.01875,
+                        child: const Divider(
+                          color: Colors.grey,
+                          thickness: 0.5,
+                        )),
                     ExpansionTile(
                       tilePadding: EdgeInsets.symmetric(
                           horizontal: screenSize.width * 0.01),
@@ -2086,53 +2250,6 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
                         ),
                       ],
                     ),
-                    // SizedBox(
-                    //     height: screenSize.height * 0.01875,
-                    //     child: const Divider(
-                    //       color: Colors.grey,
-                    //       thickness: 0.5,
-                    //     )),
-                    // Padding(
-                    //   padding: EdgeInsets.only(
-                    //     bottom: screenSize.height * 0.015,
-                    //   ),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //     children: [
-                    //       Padding(
-                    //         padding: EdgeInsets.only(
-                    //           left: screenSize.width * 0.04,
-                    //         ),
-                    //         child: Text(
-                    //           "Log-out :",
-                    //           style: TextStyle(
-                    //               fontFamily: 'Montserrat',
-                    //               fontSize: screenSize.height * 0.025,
-                    //               fontWeight: FontWeight.w500),
-                    //         ),
-                    //       ),
-                    //       IconButton(
-                    //           onPressed: () async {
-                    //             try {
-                    //               var prefs =
-                    //                   await SharedPreferences.getInstance();
-
-                    //               prefs.setBool("isLoggedIn", false);
-                    //               // Navigate to the login or home screen after successful logout
-                    //               Navigator.of(context)
-                    //                   .pop(); // Change '/login' to your desired route
-                    //               Navigator.of(context).pop();
-                    //             } catch (e) {
-                    //               print('Error during logout: $e');
-                    //             }
-                    //           },
-                    //           icon: Icon(
-                    //             Icons.logout_sharp,
-                    //             color: Colors.black,
-                    //           ))
-                    //     ],
-                    //   ),
-                    // ),
                     SizedBox(
                         height: screenSize.height * 0.01875,
                         child: const Divider(
@@ -2151,6 +2268,8 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
                           prefs.setBool('date', checkBoxStatus['isDate']!);
                           prefs.setBool('name', checkBoxStatus['isName']!);
                           prefs.setBool('plate', checkBoxStatus['isPlate']!);
+                          prefs.setBool(
+                              'gallery', checkBoxStatus['isGallery']!);
                           prefs.setString("font", selectedFont);
                           prefs.setString("size", sizeController.text);
                           double fontSize =
@@ -2182,6 +2301,507 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+typedef PlateColorCallBack = Future<void> Function(Color color, String name);
+
+class PlateColor extends StatefulWidget {
+  final Color color;
+  final String name;
+  final PlateColorCallBack onChanged;
+  const PlateColor(
+      {required this.color, required this.name, required this.onChanged});
+
+  @override
+  State<PlateColor> createState() => _PlateColorState();
+}
+
+class _PlateColorState extends State<PlateColor> {
+  Color current = Colors.white;
+  String currentName = "Non Transport";
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    current = widget.color;
+    currentName = widget.name;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+    return AlertDialog(
+      title: Text(
+        "Plate Color",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            fontFamily: "Montserrat",
+            fontSize: screenSize.height * 0.03,
+            fontWeight: FontWeight.w500),
+      ),
+      content: Container(
+        height: screenSize.height * 0.5,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "1. Non Transport\n   Vehicle",
+                  style: TextStyle(
+                      fontFamily: "Montserrat",
+                      fontSize: screenSize.height * 0.020,
+                      fontWeight: FontWeight.w600),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await widget.onChanged(Colors.white, "Non Transport");
+                    setState(() {
+                      current = Colors.white;
+                      currentName = "Non Transport";
+                    });
+                  },
+                  child: Container(
+                    height: screenSize.height * 0.035,
+                    width: screenSize.width * 0.077,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(color: Colors.black)),
+                    child: current == Colors.white &&
+                            currentName == "Non Transport"
+                        ? const Icon(Icons.check, color: Colors.black)
+                        : Center(
+                            child: Container(
+                              color: Colors.black, // Red color for the box
+                              width: screenSize.width *
+                                  0.03, // Adjust width as needed
+                              height: screenSize.height *
+                                  0.015, // Adjust height as needed
+                              margin:
+                                  EdgeInsets.all(2), // Adjust margin as needed
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+                height: screenSize.height * 0.0125,
+                child: const Divider(
+                  color: Colors.grey,
+                  thickness: 0.5,
+                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "2. Electric Vehicle",
+                  style: TextStyle(
+                      fontFamily: "Montserrat",
+                      fontSize: screenSize.height * 0.020,
+                      fontWeight: FontWeight.w600),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await widget.onChanged(Colors.green, "Electric");
+                    setState(() {
+                      current = Colors.green;
+                      currentName = "Electric";
+                    });
+                  },
+                  child: Container(
+                    height: screenSize.height * 0.035,
+                    width: screenSize.width * 0.077,
+                    decoration: BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(color: Colors.black)),
+                    child: current == Colors.green &&
+                                currentName == "Electric" ||
+                            current == Color(0xff4caf50) &&
+                                currentName == "Electric"
+                        ? const Icon(Icons.check, color: Colors.white)
+                        : Center(
+                            child: Container(
+                              color: Colors.white, // Red color for the box
+                              width: screenSize.width *
+                                  0.03, // Adjust width as needed
+                              height: screenSize.height *
+                                  0.015, // Adjust height as needed
+                              margin:
+                                  EdgeInsets.all(2), // Adjust margin as needed
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+                height: screenSize.height * 0.0125,
+                child: const Divider(
+                  color: Colors.grey,
+                  thickness: 0.5,
+                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "3. Electric Transport\n    Vehicle",
+                  style: TextStyle(
+                      fontFamily: "Montserrat",
+                      fontSize: screenSize.height * 0.020,
+                      fontWeight: FontWeight.w600),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await widget.onChanged(Colors.green, "Electric Transport");
+                    setState(() {
+                      current = Colors.green;
+                      currentName = "Electric Transport";
+                    });
+                  },
+                  child: Container(
+                    height: screenSize.height * 0.035,
+                    width: screenSize.width * 0.077,
+                    decoration: BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(color: Colors.black)),
+                    child: current == Colors.green &&
+                                currentName == "Electric Transport" ||
+                            current == Color(0xff4caf50) &&
+                                currentName == "Electric Transport"
+                        ? const Icon(Icons.check, color: Colors.yellow)
+                        : Center(
+                            child: Container(
+                              color: Colors.yellow, // Red color for the box
+                              width: screenSize.width *
+                                  0.03, // Adjust width as needed
+                              height: screenSize.height *
+                                  0.015, // Adjust height as needed
+                              margin:
+                                  EdgeInsets.all(2), // Adjust margin as needed
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+                height: screenSize.height * 0.0125,
+                child: const Divider(
+                  color: Colors.grey,
+                  thickness: 0.5,
+                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "4. Transport Vehicle",
+                  style: TextStyle(
+                      fontFamily: "Montserrat",
+                      fontSize: screenSize.height * 0.020,
+                      fontWeight: FontWeight.w600),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await widget.onChanged(Colors.yellow, "Transport");
+                    setState(() {
+                      current = Colors.yellow;
+                      currentName = "Transport";
+                    });
+                  },
+                  child: Container(
+                    height: screenSize.height * 0.035,
+                    width: screenSize.width * 0.077,
+                    decoration: BoxDecoration(
+                        color: Colors.yellow,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(color: Colors.black)),
+                    child: current == Colors.yellow &&
+                                currentName == "Transport" ||
+                            current == Color(0xffffeb3b) &&
+                                currentName == "Transport"
+                        ? const Icon(Icons.check, color: Colors.black)
+                        : Center(
+                            child: Container(
+                              color: Colors.black, // Red color for the box
+                              width: screenSize.width *
+                                  0.03, // Adjust width as needed
+                              height: screenSize.height *
+                                  0.015, // Adjust height as needed
+                              margin:
+                                  EdgeInsets.all(2), // Adjust margin as needed
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+                height: screenSize.height * 0.0125,
+                child: const Divider(
+                  color: Colors.grey,
+                  thickness: 0.5,
+                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "5. Temporary Vehicle",
+                  style: TextStyle(
+                      fontFamily: "Montserrat",
+                      fontSize: screenSize.height * 0.020,
+                      fontWeight: FontWeight.w600),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await widget.onChanged(Colors.yellow, "Temporary");
+                    setState(() {
+                      current = Colors.yellow;
+                      currentName = "Temporary";
+                    });
+                  },
+                  child: Container(
+                    height: screenSize.height * 0.035,
+                    width: screenSize.width * 0.077,
+                    decoration: BoxDecoration(
+                        color: Colors.yellow,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(color: Colors.black)),
+                    child: current == Colors.yellow &&
+                                currentName == "Temporary" ||
+                            current == Color(0xffffeb3b) &&
+                                currentName == "Temporary"
+                        ? const Icon(Icons.check, color: Colors.red)
+                        : Center(
+                            child: Container(
+                              color: Colors.red, // Red color for the box
+                              width: screenSize.width *
+                                  0.03, // Adjust width as needed
+                              height: screenSize.height *
+                                  0.015, // Adjust height as needed
+                              margin:
+                                  EdgeInsets.all(2), // Adjust margin as needed
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+                height: screenSize.height * 0.0125,
+                child: const Divider(
+                  color: Colors.grey,
+                  thickness: 0.5,
+                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "6. Rental Vehicle",
+                  style: TextStyle(
+                      fontFamily: "Montserrat",
+                      fontSize: screenSize.height * 0.020,
+                      fontWeight: FontWeight.w600),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await widget.onChanged(Colors.black, "Rental");
+                    setState(() {
+                      current = Colors.black;
+                      currentName = "Rental";
+                    });
+                  },
+                  child: Container(
+                    height: screenSize.height * 0.035,
+                    width: screenSize.width * 0.077,
+                    decoration: BoxDecoration(
+                        color: Colors.black,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(color: Colors.black)),
+                    child: current == Colors.black && currentName == "Rental"
+                        ? const Icon(Icons.check, color: Colors.yellow)
+                        : Center(
+                            child: Container(
+                              color: Colors.yellow, // Red color for the box
+                              width: screenSize.width *
+                                  0.03, // Adjust width as needed
+                              height: screenSize.height *
+                                  0.015, // Adjust height as needed
+                              margin:
+                                  EdgeInsets.all(2), // Adjust margin as needed
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+                height: screenSize.height * 0.0125,
+                child: const Divider(
+                  color: Colors.grey,
+                  thickness: 0.5,
+                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "7. Trade Vehicle",
+                  style: TextStyle(
+                      fontFamily: "Montserrat",
+                      fontSize: screenSize.height * 0.020,
+                      fontWeight: FontWeight.w600),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await widget.onChanged(Colors.red, "Trade");
+                    setState(() {
+                      current = Colors.red;
+                      currentName = "Trade";
+                    });
+                  },
+                  child: Container(
+                    height: screenSize.height * 0.035,
+                    width: screenSize.width * 0.077,
+                    decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(color: Colors.black)),
+                    child: current == Colors.red && currentName == "Trade" ||
+                            current == Color(0xfff44336) &&
+                                currentName == "Trade"
+                        ? const Icon(Icons.check, color: Colors.white)
+                        : Center(
+                            child: Container(
+                              color: Colors.white, // Red color for the box
+                              width: screenSize.width *
+                                  0.03, // Adjust width as needed
+                              height: screenSize.height *
+                                  0.015, // Adjust height as needed
+                              margin:
+                                  EdgeInsets.all(2), // Adjust margin as needed
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+                height: screenSize.height * 0.0125,
+                child: const Divider(
+                  color: Colors.grey,
+                  thickness: 0.5,
+                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "8. Diplomat Vehicle",
+                  style: TextStyle(
+                      fontFamily: "Montserrat",
+                      fontSize: screenSize.height * 0.020,
+                      fontWeight: FontWeight.w600),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await widget.onChanged(Colors.blue, "Diplomat");
+                    setState(() {
+                      current = Colors.blue;
+                      currentName = "Diplomat";
+                    });
+                  },
+                  child: Container(
+                    height: screenSize.height * 0.035,
+                    width: screenSize.width * 0.077,
+                    decoration: BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(color: Colors.black)),
+                    child: current == Colors.blue &&
+                                currentName == "Diplomat" ||
+                            current == Color(0xff2196f3) &&
+                                currentName == "Diplomat"
+                        ? const Icon(Icons.check, color: Colors.white)
+                        : Center(
+                            child: Container(
+                              color: Colors.white, // Red color for the box
+                              width: screenSize.width *
+                                  0.03, // Adjust width as needed
+                              height: screenSize.height *
+                                  0.015, // Adjust height as needed
+                              margin:
+                                  EdgeInsets.all(2), // Adjust margin as needed
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+                height: screenSize.height * 0.0125,
+                child: const Divider(
+                  color: Colors.grey,
+                  thickness: 0.5,
+                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "9. Ministry of\n   Defence Vehicle",
+                  style: TextStyle(
+                      fontFamily: "Montserrat",
+                      fontSize: screenSize.height * 0.020,
+                      fontWeight: FontWeight.w600),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await widget.onChanged(Colors.grey.shade600, "Defence");
+                    setState(() {
+                      current = Colors.grey.shade600;
+                      currentName = "Defence";
+                    });
+                  },
+                  child: Container(
+                    height: screenSize.height * 0.035,
+                    width: screenSize.width * 0.077,
+                    decoration: BoxDecoration(
+                        color: Colors.grey.shade600,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(color: Colors.black)),
+                    child: current == Colors.grey.shade600 &&
+                                currentName == "Defence" ||
+                            current == Color(0xff757575) &&
+                                currentName == "Defence"
+                        ? const Icon(Icons.check, color: Colors.white)
+                        : Center(
+                            child: Container(
+                              color: Colors.white, // Red color for the box
+                              width: screenSize.width *
+                                  0.03, // Adjust width as needed
+                              height: screenSize.height *
+                                  0.015, // Adjust height as needed
+                              margin:
+                                  EdgeInsets.all(2), // Adjust margin as needed
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+                height: screenSize.height * 0.0125,
+                child: const Divider(
+                  color: Colors.grey,
+                  thickness: 0.5,
+                )),
+          ],
+        ),
       ),
     );
   }

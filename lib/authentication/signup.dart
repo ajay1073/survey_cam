@@ -1,16 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
-import 'package:device_info/device_info.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:survey_cam/authentication/otp.dart';
 import 'package:survey_cam/authentication/login.dart';
+import 'package:survey_cam/authentication/utils/check_login.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -38,35 +35,11 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   final FirebaseAuth auth = FirebaseAuth.instance;
-  Future<bool> checkInternetConnectivity() async {
-    try {
-      final response = await http.get(Uri.parse('https://www.google.com'));
-      return response.statusCode == 200;
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
 
-  Future<String?> getDeviceId() async {
-    String? deviceId;
-
-    try {
-      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      if (Platform.isAndroid) {
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        deviceId =
-            "ID: ${androidInfo.androidId} Model: ${androidInfo.model} Manufacturer: ${androidInfo.manufacturer}"; // Get Android device ID
-      } else if (Platform.isIOS) {
-        IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-        deviceId =
-            "ID: ${iosInfo.identifierForVendor} Model: ${iosInfo.utsname.machine} Manufacturer: Apple"; // Get iOS device ID
-      }
-    } catch (e) {
-      print('Error getting device ID: $e');
-    }
-
-    return deviceId;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
   }
 
   @override
@@ -262,7 +235,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     ElevatedButton(
                       onPressed: () async {
                         if (_formkey.currentState?.validate() == true) {
-                          bool isConnected = await checkInternetConnectivity();
+                          bool isConnected =
+                              await CheckLoginLogic.checkInternetConnectivity();
                           if (isConnected == false) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -388,7 +362,7 @@ class _SignUpPageState extends State<SignUpPage> {
         );
       } else {
         print("hello new");
-        String? deviceId = await getDeviceId();
+        String? deviceId = await CheckLoginLogic.getDeviceId();
         print(deviceId);
         // User not found, proceed with the sign-up process
 

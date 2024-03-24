@@ -14,6 +14,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // TODO: implement initState
     super.initState();
     CheckLoginLogic.checkLogin(context);
+    CheckLoginLogic.getLocation();
   }
 
   @override

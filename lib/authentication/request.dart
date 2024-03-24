@@ -223,6 +223,7 @@ class _RequestPageState extends State<RequestPage> {
       // Assuming phone numbers are unique, so there should be at most one document
       DocumentSnapshot<Map<String, dynamic>> userDocument = snapshot.docs.first;
       String userId = userDocument.id;
+      String name = userDocument.data()!["name"];
       print('User ID: $userId');
 
       QuerySnapshot<Map<String, dynamic>> snapshot2 = await FirebaseFirestore
